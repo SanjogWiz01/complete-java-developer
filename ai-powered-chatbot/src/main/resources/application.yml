@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ai-powered-chatbot
+server:
+  port: 8080
