@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details - Cab Booking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-taxi"></i> CabBook</a>
+            <a href="/bookings/my-bookings" class="nav-link text-white">My Bookings</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Booking #<span th:text="${booking.id}"></span></h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Trip Details</h5>
+                        <p><strong>From:</strong> <span th:text="${booking.pickupLocation}"></span></p>
+                        <p><strong>To:</strong> <span th:text="${booking.dropoffLocation}"></span></p>
+                        <p><strong>Date:</strong> <span th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy HH:mm')}"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Cost Details</h5>
+                        <p><strong>Distance:</strong> <span th:text="${booking.estimatedDistance}"></span> km</p>
+                        <p><strong>Duration:</strong> <span th:text="${booking.estimatedDuration}"></span> minutes</p>
+                        <p><strong>Estimated Cost:</strong> ₹<span th:text="${booking.estimatedCost}"></span></p>
+                        <div th:if="${booking.actualCost}">
+                            <p><strong>Actual Cost:</strong> ₹<span th:text="${booking.actualCost}"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Status</h5>
+                        <p class="mb-3">
+                            <span class="badge bg-info" th:text="${booking.status.name()}"></span>
+                        </p>
+                    </div>
+                    <div class="col-md-6" th:if="${booking.driver}">
+                        <h5>Driver Details</h5>
+                        <p><strong>Name:</strong> <span th:text="${booking.driver.user.fullName}"></span></p>
+                        <p><strong>Vehicle:</strong> <span th:text="${booking.driver.vehicleModel}"></span></p>
+                        <p><strong>Rating:</strong> <span th:text="${booking.driver.rating}"></span> ⭐</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/bookings/my-bookings" class="btn btn-secondary">Back to My Bookings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
