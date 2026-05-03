@@ -46,7 +46,7 @@ public class SnakeGameApp extends Application {
         stage.setResizable(false);
         stage.show();
 
-        scene.requestFocus();
+        canvas.requestFocus();
 
         new AnimationTimer() {
             private long lastMove = 0;
