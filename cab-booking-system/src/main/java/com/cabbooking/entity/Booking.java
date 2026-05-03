@@ -51,6 +51,21 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal estimatedCost;
 
+    private String vehicleType;
+
+    private String rideType;
+
+    private LocalDateTime scheduledPickupTime;
+
+    private String paymentMethod;
+
+    private Integer passengerCount;
+
+    private String promoCode;
+
+    @Column(length = 700)
+    private String specialInstructions;
+
     @Column(nullable = true)
     private BigDecimal actualCost;
 

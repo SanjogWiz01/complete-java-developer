@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Admin Booking Detail')}"></head>
+<body>
+<div th:replace="~{layout :: nav}"></div>
+
+<main class="main-content section-pad">
+    <div class="container-fluid px-4">
+        <div class="admin-layout">
+            <div th:replace="~{layout :: adminSidebar}"></div>
+
+            <div>
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <h1 class="page-title">Booking #<span th:text="${booking.id}"></span></h1>
+                        <p class="page-kicker">
+                            <span th:text="${booking.user.fullName}"></span>
+                            <span> - </span>
+                            <span th:text="${booking.user.phoneNumber}"></span>
+                        </p>
+                    </div>
+                    <a href="/admin/bookings" class="btn btn-outline-secondary align-self-lg-end">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Bookings
+                    </a>
+                </div>
+
+                <div th:if="${param.assigned}" class="alert alert-success">Driver assigned successfully.</div>
+                <div th:if="${param.started}" class="alert alert-info">Ride started.</div>
+                <div th:if="${param.completed}" class="alert alert-success">Ride completed.</div>
+                <div th:if="${param.assignmentError}" class="alert alert-danger">No available driver could be auto-assigned.</div>
+
+                <div class="row g-4">
+                    <div class="col-xl-8">
+                        <section class="app-card p-4 mb-4">
+                            <div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
+                                <div>
+                                    <h4 class="mb-1">Route</h4>
+                                    <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                                          th:text="${booking.status.name()}"></span>
+                                </div>
+                                <div class="text-xl-end">
+                                    <div class="text-muted">Fare</div>
+                                    <div class="fare-total">Rs. <span th:text="${booking.actualCost != null ? booking.actualCost : booking.estimatedCost}"></span></div>
+                                </div>
+                            </div>
+
+                            <div id="routeMap" class="booking-map"
+                                 th:attr="data-pickup-lat=${booking.pickupLatitude},
+                                          data-pickup-lng=${booking.pickupLongitude},
+                                          data-dropoff-lat=${booking.dropoffLatitude},
+                                          data-dropoff-lng=${booking.dropoffLongitude}"></div>
+                        </section>
+
+                        <section class="app-card p-4">
+                            <h4 class="mb-3">Trip Information</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="text-muted">Pickup</div>
+                                    <strong th:text="${booking.pickupLocation}"></strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-muted">Drop-off</div>
+                                    <strong th:text="${booking.dropoffLocation}"></strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Vehicle</div>
+                                    <strong th:text="${booking.vehicleType != null ? booking.vehicleType : 'SEDAN'}"></strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Payment</div>
+                                    <strong th:text="${booking.paymentMethod != null ? booking.paymentMethod : 'CASH'}"></strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Distance</div>
+                                    <strong><span th:text="${#numbers.formatDecimal(booking.estimatedDistance, 1, 1)}"></span> km</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Duration</div>
+                                    <strong><span th:text="${booking.estimatedDuration}"></span> min</strong>
+                                </div>
+                                <div class="col-12" th:if="${booking.specialInstructions != null}">
+                                    <div class="text-muted">Notes</div>
+                                    <strong th:text="${booking.specialInstructions}"></strong>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <section class="app-card p-4 mb-4">
+                            <h4 class="mb-3">Workflow Actions</h4>
+                            <form th:if="${booking.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/bookings/{id}/auto-assign(id=${booking.id})}" method="post" class="mb-3">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Auto-Assign Nearest Driver
+                                </button>
+                            </form>
+
+                            <form th:if="${booking.status.name() == 'ACCEPTED'}"
+                                  th:action="@{/admin/bookings/{id}/start(id=${booking.id})}" method="post" class="mb-3">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fa-solid fa-play me-2"></i>Start Ride
+                                </button>
+                            </form>
+
+                            <form th:if="${booking.status.name() == 'STARTED'}"
+                                  th:action="@{/admin/bookings/{id}/complete(id=${booking.id})}" method="post" class="mb-3">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fa-solid fa-flag-checkered me-2"></i>Complete Ride
+                                </button>
+                            </form>
+
+                            <p th:if="${booking.status.name() == 'COMPLETED' || booking.status.name() == 'CANCELLED'}" class="text-muted mb-0">
+                                This booking has no pending admin action.
+                            </p>
+                        </section>
+
+                        <section class="app-card p-4 mb-4" th:if="${booking.driver != null}">
+                            <h4 class="mb-3">Assigned Driver</h4>
+                            <strong th:text="${booking.driver.user.fullName}"></strong>
+                            <div class="text-muted" th:text="${booking.driver.vehicleModel}"></div>
+                            <div class="text-muted">
+                                <span th:text="${booking.driver.vehicleNumber}"></span>
+                                <span> - </span>
+                                <span th:text="${booking.driver.rating}"></span>/5
+                            </div>
+                        </section>
+
+                        <section class="app-card p-4" th:if="${booking.status.name() == 'PENDING'}">
+                            <h4 class="mb-3">Manual Assignment</h4>
+                            <div th:if="${availableDrivers.empty}" class="text-muted">No available drivers right now.</div>
+                            <div class="d-grid gap-2">
+                                <form th:each="driver : ${availableDrivers}"
+                                      th:action="@{/admin/bookings/{id}/assign/{driverId}(id=${booking.id},driverId=${driver.id})}"
+                                      method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" class="btn btn-outline-primary w-100 text-start">
+                                        <strong th:text="${driver.user.fullName}"></strong>
+                                        <span class="text-muted">
+                                            - <span th:text="${driver.vehicleModel}"></span>,
+                                            <span th:text="${driver.rating}"></span>/5
+                                        </span>
+                                    </button>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layout :: footer}"></div>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

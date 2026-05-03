@@ -1,183 +1,148 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Cab Booking System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin: 15px 0;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 10px 0;
-        }
-        .sidebar {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            height: 100%;
-        }
-        .sidebar a {
-            display: block;
-            padding: 10px 15px;
-            margin: 5px 0;
-            border-radius: 5px;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        .sidebar a:hover {
-            background: #667eea;
-            color: white;
-        }
-        .table-responsive {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .btn-action {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-            margin: 0 2px;
-        }
-    </style>
-</head>
+<head th:replace="~{layout :: head('Admin Dashboard')}"></head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/"><i class="fas fa-taxi"></i> CabBook Admin</a>
+<div th:replace="~{layout :: nav}"></div>
+
+<main class="main-content section-pad">
+    <div class="container-fluid px-4">
+        <div class="admin-layout">
+            <div th:replace="~{layout :: adminSidebar}"></div>
+
             <div>
-                <form action="/auth/logout" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3">
-                <div class="sidebar">
-                    <h5 class="mb-3">Admin Menu</h5>
-                    <a href="/admin/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-                    <a href="/admin/drivers"><i class="fas fa-users"></i> Drivers</a>
-                    <a href="/admin/bookings"><i class="fas fa-calendar"></i> Bookings</a>
-                    <a href="/admin/users"><i class="fas fa-user-friends"></i> Users</a>
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <h1 class="page-title">Admin Dashboard</h1>
+                        <p class="page-kicker">Booking workload, driver availability, and revenue overview.</p>
+                    </div>
+                    <a href="/admin/bookings" class="btn btn-primary align-self-lg-end">
+                        <i class="fa-solid fa-route me-2"></i>Manage Bookings
+                    </a>
                 </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="col-md-9">
-                <h2 class="mb-4"><i class="fas fa-chart-line"></i> Dashboard</h2>
-
-                <!-- Stats -->
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div><i class="fas fa-users" style="font-size: 2rem;"></i></div>
-                            <div class="stat-value" th:text="${totalUsers}"></div>
-                            <div>Total Users</div>
-                        </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-xl-3">
+                        <section class="app-card stat-card">
+                            <i class="fa-solid fa-users fa-lg mb-3"></i>
+                            <div class="metric-value" th:text="${totalUsers}"></div>
+                            <div class="metric-label">Users</div>
+                        </section>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div><i class="fas fa-car" style="font-size: 2rem;"></i></div>
-                            <div class="stat-value" th:text="${totalDrivers}"></div>
-                            <div>Total Drivers</div>
-                        </div>
+                    <div class="col-md-6 col-xl-3">
+                        <section class="app-card stat-card">
+                            <i class="fa-solid fa-id-card fa-lg mb-3"></i>
+                            <div class="metric-value" th:text="${totalDrivers}"></div>
+                            <div class="metric-label">Drivers</div>
+                        </section>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div><i class="fas fa-clock" style="font-size: 2rem;"></i></div>
-                            <div class="stat-value" th:text="${bookings.size()}"></div>
-                            <div>Pending Bookings</div>
-                        </div>
+                    <div class="col-md-6 col-xl-3">
+                        <section class="app-card stat-card">
+                            <i class="fa-solid fa-hourglass-half fa-lg mb-3"></i>
+                            <div class="metric-value" th:text="${pendingBookings}"></div>
+                            <div class="metric-label">Pending</div>
+                        </section>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <section class="app-card stat-card">
+                            <i class="fa-solid fa-indian-rupee-sign fa-lg mb-3"></i>
+                            <div class="metric-value">Rs. <span th:text="${completedRevenue}"></span></div>
+                            <div class="metric-label">Completed Revenue</div>
+                        </section>
                     </div>
                 </div>
 
-                <!-- Recent Bookings -->
-                <div class="card mt-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-list"></i> Recent Pending Bookings</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value" th:text="${activeBookings}"></div>
+                            <div class="metric-label">Active rides</div>
+                        </section>
+                    </div>
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value" th:text="${completedBookings}"></div>
+                            <div class="metric-label">Completed rides</div>
+                        </section>
+                    </div>
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value" th:text="${cancelledBookings}"></div>
+                            <div class="metric-label">Cancelled rides</div>
+                        </section>
+                    </div>
+                </div>
+
+                <section class="app-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Recent Bookings</h4>
+                        <a href="/admin/bookings" class="btn btn-outline-primary btn-sm">View All</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>User</th>
-                                    <th>From</th>
-                                    <th>To</th>
-                                    <th>Status</th>
-                                    <th>Cost</th>
-                                    <th>Actions</th>
-                                </tr>
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Route</th>
+                                <th>Status</th>
+                                <th>Fare</th>
+                                <th></th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="booking : ${bookings}">
-                                    <td th:text="${booking.id}"></td>
-                                    <td th:text="${booking.user.fullName}"></td>
-                                    <td th:text="${booking.pickupLocation}"></td>
-                                    <td th:text="${booking.dropoffLocation}"></td>
-                                    <td>
-                                        <span class="badge bg-warning" th:text="${booking.status.name()}"></span>
-                                    </td>
-                                    <td>₹<span th:text="${booking.estimatedCost}"></span></td>
-                                    <td>
-                                        <a th:href="@{/admin/bookings/{id}(id=${booking.id})}" class="btn btn-info btn-action btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
+                            <tr th:each="booking : ${bookings}">
+                                <td>#<span th:text="${booking.id}"></span></td>
+                                <td th:text="${booking.user.fullName}"></td>
+                                <td>
+                                    <span th:text="${booking.pickupLocation}"></span>
+                                    <i class="fa-solid fa-arrow-right mx-1 text-muted"></i>
+                                    <span th:text="${booking.dropoffLocation}"></span>
+                                </td>
+                                <td>
+                                    <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                                          th:text="${booking.status.name()}"></span>
+                                </td>
+                                <td>Rs. <span th:text="${booking.actualCost != null ? booking.actualCost : booking.estimatedCost}"></span></td>
+                                <td class="text-end">
+                                    <a th:href="@{/admin/bookings/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${bookings.empty}">
+                                <td colspan="6" class="text-center text-muted py-4">No bookings yet.</td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
 
-                <!-- Available Drivers -->
-                <div class="card mt-4">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="fas fa-check-circle"></i> Available Drivers</h5>
+                <section class="app-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Drivers</h4>
+                        <a href="/admin/drivers" class="btn btn-outline-primary btn-sm">Manage</a>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Vehicle</th>
-                                    <th>Rating</th>
-                                    <th>Status</th>
-                                    <th>Rides</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="driver : ${drivers.stream().filter(d -> d.status.name() == 'AVAILABLE').toList()}">
-                                    <td th:text="${driver.user.fullName}"></td>
-                                    <td th:text="${driver.vehicleModel}"></td>
-                                    <td th:text="${driver.rating} + ' ⭐'"></td>
-                                    <td>
-                                        <span class="badge bg-success" th:text="${driver.status.name()}"></span>
-                                    </td>
-                                    <td th:text="${driver.totalRides}"></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-xl-4" th:each="driver : ${drivers}">
+                            <div class="border rounded p-3 h-100">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <strong th:text="${driver.user.fullName}"></strong>
+                                    <span class="badge"
+                                          th:classappend="${driver.status.name() == 'AVAILABLE' ? 'text-bg-success' : (driver.status.name() == 'BUSY' ? 'text-bg-primary' : 'text-bg-secondary')}"
+                                          th:text="${driver.status.name()}"></span>
+                                </div>
+                                <div class="text-muted mt-2" th:text="${driver.vehicleModel}"></div>
+                                <div class="text-muted"><span th:text="${driver.rating}"></span>/5 rating</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{layout :: footer}"></div>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

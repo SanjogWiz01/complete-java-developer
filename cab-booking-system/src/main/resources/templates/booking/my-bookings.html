@@ -1,152 +1,129 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings - Cab Booking System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .booking-card {
-            border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            margin: 15px 0;
-            transition: transform 0.3s ease;
-        }
-        .booking-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-        .status-badge {
-            padding: 0.5rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        .status-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-        .status-accepted {
-            background-color: #17a2b8;
-            color: white;
-        }
-        .status-started {
-            background-color: #007bff;
-            color: white;
-        }
-        .status-completed {
-            background-color: #28a745;
-            color: white;
-        }
-        .status-cancelled {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-action {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
+<head th:replace="~{layout :: head('My Bookings')}"></head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-taxi"></i> CabBook</a>
-            <div>
-                <a href="/bookings/book" class="btn btn-light btn-sm me-2">Book New Ride</a>
-                <form action="/auth/logout" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+<div th:replace="~{layout :: nav}"></div>
 
-    <div class="container mt-5">
-        <h2 class="mb-4"><i class="fas fa-list"></i> My Bookings</h2>
+<main class="main-content section-pad">
+    <div class="container">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="page-title">My Bookings</h1>
+                <p class="page-kicker">Track ride status, view route details, cancel pending rides, and rate completed trips.</p>
+            </div>
+            <a href="/bookings/book" class="btn btn-primary align-self-lg-end">
+                <i class="fa-solid fa-plus me-2"></i>Book New Ride
+            </a>
+        </div>
 
         <div th:if="${param.rated}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Thank you!</strong> Your rating has been submitted.
+            Rating submitted successfully.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <div th:if="${bookings.isEmpty()}" class="alert alert-info">
-            <i class="fas fa-info-circle"></i> You haven't booked any rides yet. <a href="/bookings/book">Book your first ride now</a>
+        <div class="app-card p-3 mb-4">
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-secondary active" data-status-filter="ALL">All</button>
+                <button type="button" class="btn btn-outline-secondary" data-status-filter="PENDING">Pending</button>
+                <button type="button" class="btn btn-outline-secondary" data-status-filter="ACCEPTED">Accepted</button>
+                <button type="button" class="btn btn-outline-secondary" data-status-filter="STARTED">Started</button>
+                <button type="button" class="btn btn-outline-secondary" data-status-filter="COMPLETED">Completed</button>
+                <button type="button" class="btn btn-outline-secondary" data-status-filter="CANCELLED">Cancelled</button>
+            </div>
         </div>
 
-        <div th:each="booking : ${bookings}" class="booking-card p-4">
-            <div class="row">
-                <div class="col-md-8">
-                    <h5 class="mb-3">
-                        <i class="fas fa-location-dot text-danger"></i>
-                        <span th:text="${booking.pickupLocation}"></span>
-                        <i class="fas fa-arrow-right mx-2"></i>
-                        <span th:text="${booking.dropoffLocation}"></span>
-                    </h5>
-                    <p class="mb-2">
-                        <strong>Status:</strong>
-                        <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}" th:text="${booking.status.name()}"></span>
-                    </p>
-                    <p class="mb-2">
-                        <strong>Date:</strong> <span th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy')}"></span>
-                    </p>
-                    <p class="mb-2">
-                        <strong>Distance:</strong> <span th:text="${booking.estimatedDistance}"></span> km
-                    </p>
-                    <p class="mb-2">
-                        <strong>Estimated Cost:</strong> ₹<span th:text="${booking.estimatedCost}"></span>
-                    </p>
-                    <div th:if="${booking.driver}">
-                        <p class="mb-2">
-                            <strong>Driver:</strong> <span th:text="${booking.driver.user.fullName}"></span>
-                            (<span th:text="${booking.driver.rating}"></span> ⭐)
-                        </p>
+        <div th:if="${bookings.empty}" class="app-card p-5 text-center">
+            <i class="fa-solid fa-route fa-3x text-muted mb-3"></i>
+            <h4>No bookings yet</h4>
+            <p class="text-muted">Create your first ride request from the booking screen.</p>
+            <a href="/bookings/book" class="btn btn-primary">Book a Ride</a>
+        </div>
+
+        <div class="d-grid gap-3">
+            <article th:each="booking : ${bookings}" class="app-card p-4" th:attr="data-booking-status=${booking.status.name()}">
+                <div class="row g-3 align-items-start">
+                    <div class="col-lg-8">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                            <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                                  th:text="${booking.status.name()}"></span>
+                            <span class="text-muted">Booking #<span th:text="${booking.id}"></span></span>
+                        </div>
+                        <h5 class="mb-3">
+                            <i class="fa-solid fa-location-dot text-danger me-2"></i>
+                            <span th:text="${booking.pickupLocation}"></span>
+                            <i class="fa-solid fa-arrow-right mx-2 text-muted"></i>
+                            <span th:text="${booking.dropoffLocation}"></span>
+                        </h5>
+                        <div class="row g-2 text-muted">
+                            <div class="col-sm-6">
+                                <i class="fa-regular fa-calendar me-2"></i>
+                                <span th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy, HH:mm')}"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fa-solid fa-car-side me-2"></i>
+                                <span th:text="${booking.vehicleType != null ? booking.vehicleType : 'SEDAN'}"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fa-solid fa-road me-2"></i>
+                                <span th:text="${#numbers.formatDecimal(booking.estimatedDistance, 1, 1)}"></span> km
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fa-solid fa-wallet me-2"></i>
+                                Rs. <span th:text="${booking.actualCost != null ? booking.actualCost : booking.estimatedCost}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${booking.driver != null}" class="mt-3 text-muted">
+                            <i class="fa-solid fa-id-badge me-2"></i>
+                            <span th:text="${booking.driver.user.fullName}"></span>
+                            <span> - </span>
+                            <span th:text="${booking.driver.vehicleModel}"></span>
+                            <span> - </span>
+                            <span th:text="${booking.driver.rating}"></span>/5
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-info btn-sm btn-action mb-2">
-                        <i class="fas fa-eye"></i> View Details
-                    </a>
-                    <div th:if="${booking.status.name() == 'PENDING'}">
-                        <button class="btn btn-danger btn-sm btn-action mb-2" data-bs-toggle="modal" th:data-bs-target="@{#cancelModal{id}(id=${booking.id})}">
-                            <i class="fas fa-times"></i> Cancel
+                    <div class="col-lg-4 text-lg-end">
+                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-sm mb-2">
+                            <i class="fa-solid fa-eye me-1"></i>Details
+                        </a>
+                        <button th:if="${booking.status.name() == 'PENDING' || booking.status.name() == 'ACCEPTED'}"
+                                type="button" class="btn btn-outline-danger btn-sm mb-2"
+                                data-bs-toggle="modal" th:attr="data-bs-target='#cancelModal' + ${booking.id}">
+                            <i class="fa-solid fa-ban me-1"></i>Cancel
                         </button>
-                    </div>
-                    <div th:if="${booking.status.name() == 'COMPLETED' && booking.userRating == 0}">
-                        <a th:href="@{/bookings/{id}/rate(id=${booking.id})}" class="btn btn-warning btn-sm btn-action">
-                            <i class="fas fa-star"></i> Rate Ride
+                        <a th:if="${booking.status.name() == 'COMPLETED' && booking.userRating == 0}"
+                           th:href="@{/bookings/{id}/rate(id=${booking.id})}" class="btn btn-warning btn-sm mb-2">
+                            <i class="fa-solid fa-star me-1"></i>Rate
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Cancel Modal -->
-            <div class="modal fade" th:id="@{cancelModal{id}(id=${booking.id})}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Cancel Booking</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
-                            <div class="modal-body">
-                                <div class="form-group">
-                                    <label for="reason">Reason for cancellation:</label>
+                <div class="modal fade" th:id="'cancelModal' + ${booking.id}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Cancel Booking #<span th:text="${booking.id}"></span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <div class="modal-body">
+                                    <label class="form-label">Cancellation Reason</label>
                                     <textarea class="form-control" name="reason" rows="3" required></textarea>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
-                            </div>
-                        </form>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </article>
         </div>
     </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{layout :: footer}"></div>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

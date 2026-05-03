@@ -1,7 +1,9 @@
 package com.cabbooking.controller;
 
 import com.cabbooking.entity.Booking;
+import com.cabbooking.entity.BookingStatus;
 import com.cabbooking.entity.Driver;
+import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
 import com.cabbooking.service.BookingService;
 import com.cabbooking.service.DriverService;
@@ -23,11 +25,19 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
         List<Driver> drivers = driverService.getAllDrivers();
-        List<Booking> bookings = bookingService.getPendingBookings();
+        List<Booking> bookings = bookingService.getAllBookings();
         model.addAttribute("drivers", drivers);
         model.addAttribute("bookings", bookings);
         model.addAttribute("totalDrivers", drivers.size());
         model.addAttribute("totalUsers", userService.getAllUsers().size());
+        model.addAttribute("totalBookings", bookings.size());
+        model.addAttribute("pendingBookings", bookingService.countByStatus(BookingStatus.PENDING));
+        model.addAttribute("activeBookings",
+                bookingService.countByStatus(BookingStatus.ACCEPTED)
+                        + bookingService.countByStatus(BookingStatus.STARTED));
+        model.addAttribute("completedBookings", bookingService.countByStatus(BookingStatus.COMPLETED));
+        model.addAttribute("cancelledBookings", bookingService.countByStatus(BookingStatus.CANCELLED));
+        model.addAttribute("completedRevenue", bookingService.getCompletedRevenue());
         return "admin/dashboard";
     }
 
@@ -44,13 +54,26 @@ public class AdminController {
         List<Booking> bookings = bookingService.getDriverBookings(id);
         model.addAttribute("driver", driver);
         model.addAttribute("bookings", bookings);
+        model.addAttribute("statuses", DriverStatus.values());
         return "admin/driver-detail";
     }
 
+    @PostMapping("/drivers/{id}/status")
+    public String updateDriverStatus(
+            @PathVariable Long id,
+            @RequestParam DriverStatus status) {
+        driverService.updateDriverStatus(id, status);
+        return "redirect:/admin/drivers/" + id + "?statusUpdated";
+    }
+
     @GetMapping("/bookings")
-    public String listBookings(Model model) {
-        List<Booking> bookings = bookingService.getPendingBookings();
+    public String listBookings(@RequestParam(required = false) BookingStatus status, Model model) {
+        List<Booking> bookings = status == null
+                ? bookingService.getAllBookings()
+                : bookingService.getBookingsByStatus(status);
         model.addAttribute("bookings", bookings);
+        model.addAttribute("statuses", BookingStatus.values());
+        model.addAttribute("selectedStatus", status);
         return "admin/bookings";
     }
 
@@ -61,6 +84,17 @@ public class AdminController {
         model.addAttribute("booking", booking);
         model.addAttribute("availableDrivers", availableDrivers);
         return "admin/booking-detail";
+    }
+
+    @PostMapping("/bookings/{id}/auto-assign")
+    public String autoAssignDriver(@PathVariable Long id, Model model) {
+        try {
+            bookingService.autoAssignDriver(id);
+            return "redirect:/admin/bookings/" + id + "?assigned";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "redirect:/admin/bookings/" + id + "?assignmentError";
+        }
     }
 
     @PostMapping("/bookings/{id}/assign/{driverId}")

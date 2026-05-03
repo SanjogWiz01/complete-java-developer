@@ -5,10 +5,12 @@ import com.cabbooking.entity.User;
 import com.cabbooking.service.BookingService;
 import com.cabbooking.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -31,6 +33,15 @@ public class BookingController {
             @RequestParam Double pickupLongitude,
             @RequestParam Double dropoffLatitude,
             @RequestParam Double dropoffLongitude,
+            @RequestParam(defaultValue = "SEDAN") String vehicleType,
+            @RequestParam(defaultValue = "RIDE_NOW") String rideType,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime scheduledPickupTime,
+            @RequestParam(defaultValue = "CASH") String paymentMethod,
+            @RequestParam(defaultValue = "1") Integer passengerCount,
+            @RequestParam(required = false) String promoCode,
+            @RequestParam(required = false) String specialInstructions,
+            @RequestParam(required = false, defaultValue = "false") Boolean autoAssign,
             Authentication authentication,
             Model model) {
         try {
@@ -39,8 +50,18 @@ public class BookingController {
 
             Booking booking = bookingService.createBooking(
                     user, pickupLocation, dropoffLocation,
-                    pickupLatitude, pickupLongitude,
-                    dropoffLatitude, dropoffLongitude);
+                    pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude,
+                    vehicleType, rideType, scheduledPickupTime, paymentMethod,
+                    passengerCount, promoCode, specialInstructions);
+
+            if (Boolean.TRUE.equals(autoAssign)) {
+                try {
+                    booking = bookingService.autoAssignDriver(booking.getId());
+                    return "redirect:/bookings/" + booking.getId() + "?matched";
+                } catch (Exception ignored) {
+                    return "redirect:/bookings/" + booking.getId() + "?queued";
+                }
+            }
 
             model.addAttribute("booking", booking);
             return "redirect:/bookings/" + booking.getId();

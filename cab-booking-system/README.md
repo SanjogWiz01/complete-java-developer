@@ -7,7 +7,10 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 ### User Module
 - ✅ User registration and authentication
 - ✅ Book cabs with pickup/drop-off locations
-- ✅ Real-time distance and cost estimation
+- ✅ Pokhara, Nepal map booking with pickup/drop-off pins
+- ✅ Real-time distance and cost estimation at Rs. 50/km
+- ✅ Vehicle type, ride schedule, passenger count, payment mode, promo code, and ride notes
+- ✅ Automatic nearest-driver assignment
 - ✅ View booking history
 - ✅ Track booking status
 - ✅ Rate and review rides
@@ -17,6 +20,7 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 - ✅ Manage drivers
 - ✅ View all bookings
 - ✅ Assign drivers to bookings
+- ✅ Auto-assign closest available driver
 - ✅ Track ride status
 - ✅ Monitor system statistics
 - ✅ View user profiles
@@ -24,7 +28,7 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 ### Location Services
 - ✅ Haversine formula for distance calculation
 - ✅ Intelligent travel time estimation
-- ✅ Dynamic cost calculation based on distance and time
+- ✅ Distance fare calculation using 1 km = Rs. 50
 
 ## 🛠️ Technology Stack
 

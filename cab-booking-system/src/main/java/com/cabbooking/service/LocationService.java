@@ -7,9 +7,8 @@ import java.math.RoundingMode;
 @Service
 public class LocationService {
     private static final double EARTH_RADIUS_KM = 6371.0;
-    private static final BigDecimal BASE_FARE = new BigDecimal("50");
-    private static final BigDecimal PER_KM_RATE = new BigDecimal("15");
-    private static final BigDecimal PER_MINUTE_RATE = new BigDecimal("2");
+    private static final BigDecimal MINIMUM_FARE = new BigDecimal("50");
+    private static final BigDecimal PER_KM_RATE = new BigDecimal("50");
 
     public Double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
         double dLat = Math.toRadians(lat2 - lat1);
@@ -30,12 +29,38 @@ public class LocationService {
 
     public BigDecimal calculateCost(Double distance, Integer durationMinutes) {
         BigDecimal distanceKm = BigDecimal.valueOf(distance);
-        BigDecimal duration = BigDecimal.valueOf(durationMinutes);
-
-        BigDecimal distanceCost = distanceKm.multiply(PER_KM_RATE);
-        BigDecimal timeCost = duration.multiply(PER_MINUTE_RATE);
-        BigDecimal totalCost = BASE_FARE.add(distanceCost).add(timeCost);
+        BigDecimal totalCost = distanceKm.multiply(PER_KM_RATE);
+        if (totalCost.compareTo(MINIMUM_FARE) < 0) {
+            totalCost = MINIMUM_FARE;
+        }
 
         return totalCost.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal calculateCost(Double distance, Integer durationMinutes, String vehicleType, String promoCode) {
+        BigDecimal subtotal = calculateCost(distance, durationMinutes);
+        BigDecimal discount = calculatePromoDiscount(subtotal, promoCode);
+        BigDecimal totalCost = subtotal.subtract(discount);
+
+        if (totalCost.compareTo(MINIMUM_FARE) < 0) {
+            totalCost = MINIMUM_FARE;
+        }
+
+        return totalCost.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal calculatePromoDiscount(BigDecimal subtotal, String promoCode) {
+        if (promoCode == null || promoCode.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+
+        String normalizedPromo = promoCode.trim().toUpperCase();
+        if ("WELCOME10".equals(normalizedPromo)) {
+            return subtotal.multiply(new BigDecimal("0.10")).setScale(2, RoundingMode.HALF_UP);
+        }
+        if ("CITY25".equals(normalizedPromo)) {
+            return new BigDecimal("25.00");
+        }
+        return BigDecimal.ZERO;
     }
 }

@@ -1,99 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Your Ride - Cab Booking System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .star-rating {
-            font-size: 2rem;
-            cursor: pointer;
-        }
-        .star {
-            color: #ccc;
-            transition: color 0.2s;
-        }
-        .star.active, .star:hover {
-            color: #ffc107;
-        }
-    </style>
-</head>
+<head th:replace="~{layout :: head('Rate Ride')}"></head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-taxi"></i> CabBook</a>
-            <a href="/bookings/my-bookings" class="nav-link text-white">My Bookings</a>
-        </div>
-    </nav>
+<div th:replace="~{layout :: nav}"></div>
 
-    <div class="container mt-5">
-        <div class="card" style="max-width: 600px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <div class="card-header bg-warning text-dark">
-                <h4 class="mb-0">Rate Your Ride</h4>
+<main class="main-content section-pad">
+    <div class="container">
+        <div class="app-card auth-box">
+            <div class="text-center mb-4">
+                <span class="feature-icon"><i class="fa-solid fa-star"></i></span>
+                <h1 class="h3 fw-bold">Rate Your Ride</h1>
+                <p class="text-muted mb-0">Booking #<span th:text="${booking.id}"></span></p>
             </div>
-            <div class="card-body">
-                <p class="text-muted mb-4">Help us improve by rating your ride experience</p>
 
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="mb-4 pb-3 border-bottom">
+                <div class="mb-2">
+                    <strong th:text="${booking.pickupLocation}"></strong>
+                    <i class="fa-solid fa-arrow-right mx-2 text-muted"></i>
+                    <strong th:text="${booking.dropoffLocation}"></strong>
+                </div>
+                <div class="text-muted">
+                    <span th:if="${booking.driver != null}" th:text="${booking.driver.user.fullName}"></span>
+                    <span th:if="${booking.driver == null}">Driver unavailable</span>
+                    <span> - Rs. </span>
+                    <span th:text="${booking.actualCost != null ? booking.actualCost : booking.estimatedCost}"></span>
+                </div>
+            </div>
+
+            <form th:action="@{/bookings/{id}/rate(id=${booking.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="mb-4">
-                    <h5>Trip Summary</h5>
-                    <p><strong>From:</strong> <span th:text="${booking.pickupLocation}"></span></p>
-                    <p><strong>To:</strong> <span th:text="${booking.dropoffLocation}"></span></p>
-                    <p><strong>Driver:</strong> <span th:text="${booking.driver.user.fullName}"></span></p>
-                    <p><strong>Cost:</strong> ₹<span th:text="${booking.actualCost}"></span></p>
+                    <label class="form-label">Rating</label>
+                    <div class="star-rating" id="ratingStars">
+                        <span class="star active" data-value="1"><i class="fa-solid fa-star"></i></span>
+                        <span class="star active" data-value="2"><i class="fa-solid fa-star"></i></span>
+                        <span class="star active" data-value="3"><i class="fa-solid fa-star"></i></span>
+                        <span class="star active" data-value="4"><i class="fa-solid fa-star"></i></span>
+                        <span class="star active" data-value="5"><i class="fa-solid fa-star"></i></span>
+                    </div>
+                    <input type="hidden" id="rating" name="rating" value="5">
                 </div>
 
-                <hr>
+                <div class="mb-4">
+                    <label for="review" class="form-label">Review</label>
+                    <textarea class="form-control" id="review" name="review" rows="4" placeholder="Share feedback about the ride"></textarea>
+                </div>
 
-                <form th:action="@{/bookings/{id}/rate(id=${booking.id})}" method="post">
-                    <div class="mb-4">
-                        <label class="form-label">How would you rate your ride?</label>
-                        <div class="star-rating" id="ratingStars">
-                            <span class="star" data-value="1"><i class="fas fa-star"></i></span>
-                            <span class="star" data-value="2"><i class="fas fa-star"></i></span>
-                            <span class="star" data-value="3"><i class="fas fa-star"></i></span>
-                            <span class="star" data-value="4"><i class="fas fa-star"></i></span>
-                            <span class="star" data-value="5"><i class="fas fa-star"></i></span>
-                        </div>
-                        <input type="hidden" id="rating" name="rating" value="5">
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="review" class="form-label">Your Review (Optional)</label>
-                        <textarea class="form-control" id="review" name="review" rows="4" placeholder="Share your feedback..."></textarea>
-                    </div>
-
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
-                        <a href="/bookings/my-bookings" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-success">Submit Rating</button>
-                    </div>
-                </form>
-            </div>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                    <a href="/bookings/my-bookings" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                </div>
+            </form>
         </div>
     </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.querySelectorAll('.star').forEach(star => {
-            star.addEventListener('click', () => {
-                const rating = star.getAttribute('data-value');
-                document.getElementById('rating').value = rating;
-
-                document.querySelectorAll('.star').forEach(s => {
-                    if (s.getAttribute('data-value') <= rating) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
+<div th:replace="~{layout :: footer}"></div>
+<div th:replace="~{layout :: scripts}"></div>
+<script>
+    document.querySelectorAll(".star").forEach((star) => {
+        star.addEventListener("click", () => {
+            const rating = star.getAttribute("data-value");
+            document.getElementById("rating").value = rating;
+            document.querySelectorAll(".star").forEach((item) => {
+                item.classList.toggle("active", item.getAttribute("data-value") <= rating);
             });
         });
-
-        // Initialize with 5 stars
-        document.querySelectorAll('.star').forEach(star => {
-            star.classList.add('active');
-        });
-    </script>
+    });
+</script>
 </body>
 </html>

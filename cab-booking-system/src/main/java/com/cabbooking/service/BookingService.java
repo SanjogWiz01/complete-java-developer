@@ -5,8 +5,10 @@ import com.cabbooking.repository.BookingRepository;
 import com.cabbooking.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,10 +20,22 @@ public class BookingService {
     public Booking createBooking(User user, String pickupLocation, String dropoffLocation,
                                 Double pickupLat, Double pickupLon,
                                 Double dropoffLat, Double dropoffLon) {
+        return createBooking(user, pickupLocation, dropoffLocation, pickupLat, pickupLon,
+                dropoffLat, dropoffLon, "SEDAN", "RIDE_NOW", null,
+                "CASH", 1, null, null);
+    }
+
+    public Booking createBooking(User user, String pickupLocation, String dropoffLocation,
+                                Double pickupLat, Double pickupLon,
+                                Double dropoffLat, Double dropoffLon,
+                                String vehicleType, String rideType,
+                                LocalDateTime scheduledPickupTime,
+                                String paymentMethod, Integer passengerCount,
+                                String promoCode, String specialInstructions) {
         Double distance = locationService.calculateDistance(
                 pickupLat, pickupLon, dropoffLat, dropoffLon);
         Integer duration = locationService.estimateDuration(distance);
-        var cost = locationService.calculateCost(distance, duration);
+        BigDecimal cost = locationService.calculateCost(distance, duration, vehicleType, promoCode);
 
         Booking booking = Booking.builder()
                 .user(user)
@@ -34,6 +48,13 @@ public class BookingService {
                 .estimatedDistance(distance)
                 .estimatedDuration(duration)
                 .estimatedCost(cost)
+                .vehicleType(normalizeOption(vehicleType, "SEDAN"))
+                .rideType(normalizeOption(rideType, "RIDE_NOW"))
+                .scheduledPickupTime(scheduledPickupTime)
+                .paymentMethod(normalizeOption(paymentMethod, "CASH"))
+                .passengerCount(passengerCount == null || passengerCount < 1 ? 1 : passengerCount)
+                .promoCode(normalizePromoCode(promoCode))
+                .specialInstructions(trimToNull(specialInstructions))
                 .status(BookingStatus.PENDING)
                 .userRating(0.0)
                 .build();
@@ -47,15 +68,37 @@ public class BookingService {
     }
 
     public List<Booking> getUserBookings(User user) {
-        return bookingRepository.findByUser(user);
+        return bookingRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
     public List<Booking> getDriverBookings(Long driverId) {
         return bookingRepository.findByDriverId(driverId);
     }
 
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<Booking> getBookingsByStatus(BookingStatus status) {
+        return bookingRepository.findByStatusOrderByCreatedAtDesc(status);
+    }
+
     public List<Booking> getPendingBookings() {
-        return bookingRepository.findByStatus(BookingStatus.PENDING);
+        return bookingRepository.findByStatusOrderByCreatedAtDesc(BookingStatus.PENDING);
+    }
+
+    public long countByStatus(BookingStatus status) {
+        Long count = bookingRepository.countByStatus(status);
+        return count == null ? 0 : count;
+    }
+
+    public BigDecimal getCompletedRevenue() {
+        return bookingRepository.findByStatus(BookingStatus.COMPLETED)
+                .stream()
+                .map(booking -> booking.getActualCost() != null
+                        ? booking.getActualCost()
+                        : booking.getEstimatedCost())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public Booking acceptBooking(Long bookingId, Driver driver) {
@@ -65,7 +108,29 @@ public class BookingService {
         }
         booking.setDriver(driver);
         booking.setStatus(BookingStatus.ACCEPTED);
+        driver.setStatus(DriverStatus.BUSY);
+        driverRepository.save(driver);
         return bookingRepository.save(booking);
+    }
+
+    public Booking autoAssignDriver(Long bookingId) {
+        Booking booking = getBookingById(bookingId);
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Only pending bookings can be auto-assigned");
+        }
+
+        Driver driver = driverRepository.findByStatus(DriverStatus.AVAILABLE)
+                .stream()
+                .min(Comparator
+                        .comparingDouble((Driver candidate) -> locationService.calculateDistance(
+                                candidate.getCurrentLatitude(),
+                                candidate.getCurrentLongitude(),
+                                booking.getPickupLatitude(),
+                                booking.getPickupLongitude()))
+                        .thenComparing(Comparator.comparing(Driver::getRating).reversed()))
+                .orElseThrow(() -> new RuntimeException("No available drivers found"));
+
+        return acceptBooking(bookingId, driver);
     }
 
     public Booking startRide(Long bookingId) {
@@ -75,6 +140,10 @@ public class BookingService {
         }
         booking.setStatus(BookingStatus.STARTED);
         booking.setPickupTime(java.time.LocalDateTime.now());
+        if (booking.getDriver() != null) {
+            booking.getDriver().setStatus(DriverStatus.BUSY);
+            driverRepository.save(booking.getDriver());
+        }
         return bookingRepository.save(booking);
     }
 
@@ -92,6 +161,7 @@ public class BookingService {
         if (driver != null) {
             Integer totalRides = driver.getTotalRides() + 1;
             driver.setTotalRides(totalRides);
+            driver.setStatus(DriverStatus.AVAILABLE);
             driverRepository.save(driver);
         }
 
@@ -106,6 +176,10 @@ public class BookingService {
         }
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancellationReason(reason);
+        if (booking.getDriver() != null) {
+            booking.getDriver().setStatus(DriverStatus.AVAILABLE);
+            driverRepository.save(booking.getDriver());
+        }
         return bookingRepository.save(booking);
     }
 
@@ -136,5 +210,22 @@ public class BookingService {
             driver.setRating(Math.round(avgRating * 10.0) / 10.0);
             driverRepository.save(driver);
         }
+    }
+
+    private String normalizeOption(String value, String fallback) {
+        String normalized = trimToNull(value);
+        return normalized == null ? fallback : normalized.trim().toUpperCase();
+    }
+
+    private String normalizePromoCode(String promoCode) {
+        String normalized = trimToNull(promoCode);
+        return normalized == null ? null : normalized.trim().toUpperCase();
+    }
+
+    private String trimToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }
