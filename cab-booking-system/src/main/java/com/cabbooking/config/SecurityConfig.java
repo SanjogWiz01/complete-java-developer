@@ -41,7 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/about", "/contact", "/auth/register", "/auth/login",
-                        "/static/**", "/css/**", "/js/**", "/images/**").permitAll()
+                        "/static/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bookings/**", "/user/**").authenticated()
                 .anyRequest().authenticated()
@@ -59,6 +59,12 @@ public class SecurityConfig {
         )
         .rememberMe(remember -> remember
                 .userDetailsService(userDetailsService)
+        )
+        .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/h2-console/**")
+        )
+        .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.sameOrigin())
         );
 
         return http.build();
