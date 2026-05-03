@@ -31,7 +31,7 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 - **Backend Framework:** Spring Boot 3.2.0
 - **Security:** Spring Security with BCrypt password encoding
 - **ORM:** Hibernate with JPA
-- **Database:** MySQL 8.0
+- **Database:** H2 by default, MySQL 8.0 optional
 - **Frontend:** Thymeleaf, Bootstrap 5, HTML5/CSS3
 - **Build Tool:** Maven
 - **Java Version:** 17
@@ -82,7 +82,7 @@ cab-booking-system/
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.6+
-- MySQL Server 8.0+
+- Optional: MySQL Server 8.0+ for the `mysql` profile
 - Git
 
 ### Installation & Setup
@@ -93,33 +93,34 @@ cab-booking-system/
    cd cab-booking-system
    ```
 
-2. **Create MySQL Database**
-   ```sql
-   CREATE DATABASE cab_booking_db;
-   ```
-
-3. **Configure Database Connection**
-   
-   Edit `src/main/resources/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/cab_booking_db
-   spring.datasource.username=root
-   spring.datasource.password=your_password
-   ```
-
-4. **Build the Project**
+2. **Build the Project**
    ```bash
    mvn clean install
    ```
 
-5. **Run the Application**
+3. **Run the Application**
    ```bash
    mvn spring-boot:run
    ```
 
-6. **Access the Application**
+4. **Access the Application**
    - Open browser: `http://localhost:8080`
    - Homepage: `http://localhost:8080/`
+
+
+### Optional MySQL Setup
+
+The default configuration uses an in-memory H2 database so the app runs immediately on a local machine. To use MySQL instead:
+
+1. Create the database:
+   ```sql
+   CREATE DATABASE cab_booking_db;
+   ```
+2. Update `src/main/resources/application-mysql.properties` with your MySQL username and password.
+3. Run the app with the MySQL profile:
+   ```bash
+   mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+   ```
 
 ## 👤 Default Credentials
 
@@ -237,7 +238,7 @@ This project teaches you:
 
 ### Database Connection Error
 ```
-Solution: Ensure MySQL is running and credentials in application.properties are correct
+Solution: The default H2 setup needs no external database. If using the `mysql` profile, ensure MySQL is running and credentials in application-mysql.properties are correct
 ```
 
 ### Port Already in Use
