@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - Cab Booking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .booking-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin: 15px 0;
+            transition: transform 0.3s ease;
+        }
+        .booking-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .status-accepted {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .status-started {
+            background-color: #007bff;
+            color: white;
+        }
+        .status-completed {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-taxi"></i> CabBook</a>
+            <div>
+                <a href="/bookings/book" class="btn btn-light btn-sm me-2">Book New Ride</a>
+                <form action="/auth/logout" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="mb-4"><i class="fas fa-list"></i> My Bookings</h2>
+
+        <div th:if="${param.rated}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Thank you!</strong> Your rating has been submitted.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${bookings.isEmpty()}" class="alert alert-info">
+            <i class="fas fa-info-circle"></i> You haven't booked any rides yet. <a href="/bookings/book">Book your first ride now</a>
+        </div>
+
+        <div th:each="booking : ${bookings}" class="booking-card p-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-3">
+                        <i class="fas fa-location-dot text-danger"></i>
+                        <span th:text="${booking.pickupLocation}"></span>
+                        <i class="fas fa-arrow-right mx-2"></i>
+                        <span th:text="${booking.dropoffLocation}"></span>
+                    </h5>
+                    <p class="mb-2">
+                        <strong>Status:</strong>
+                        <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}" th:text="${booking.status.name()}"></span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Date:</strong> <span th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy')}"></span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Distance:</strong> <span th:text="${booking.estimatedDistance}"></span> km
+                    </p>
+                    <p class="mb-2">
+                        <strong>Estimated Cost:</strong> ₹<span th:text="${booking.estimatedCost}"></span>
+                    </p>
+                    <div th:if="${booking.driver}">
+                        <p class="mb-2">
+                            <strong>Driver:</strong> <span th:text="${booking.driver.user.fullName}"></span>
+                            (<span th:text="${booking.driver.rating}"></span> ⭐)
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-info btn-sm btn-action mb-2">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <div th:if="${booking.status.name() == 'PENDING'}">
+                        <button class="btn btn-danger btn-sm btn-action mb-2" data-bs-toggle="modal" th:data-bs-target="@{#cancelModal{id}(id=${booking.id})}">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                    <div th:if="${booking.status.name() == 'COMPLETED' && booking.userRating == 0}">
+                        <a th:href="@{/bookings/{id}/rate(id=${booking.id})}" class="btn btn-warning btn-sm btn-action">
+                            <i class="fas fa-star"></i> Rate Ride
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancel Modal -->
+            <div class="modal fade" th:id="@{cancelModal{id}(id=${booking.id})}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Cancel Booking</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="reason">Reason for cancellation:</label>
+                                    <textarea class="form-control" name="reason" rows="3" required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
