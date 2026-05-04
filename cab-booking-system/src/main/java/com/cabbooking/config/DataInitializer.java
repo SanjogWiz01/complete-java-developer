@@ -1,10 +1,15 @@
 package com.cabbooking.config;
 
+<<<<<<< HEAD
 import com.cabbooking.entity.Driver;
 import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
 import com.cabbooking.entity.UserRole;
 import com.cabbooking.repository.DriverRepository;
+=======
+import com.cabbooking.entity.User;
+import com.cabbooking.entity.UserRole;
+>>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21
 import com.cabbooking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -18,11 +23,15 @@ public class DataInitializer implements CommandLineRunner {
     private static final String ADMIN_PASSWORD = "admin123";
 
     private final UserRepository userRepository;
+<<<<<<< HEAD
     private final DriverRepository driverRepository;
+=======
+>>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
+<<<<<<< HEAD
         if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
             User admin = User.builder()
                     .email(ADMIN_EMAIL)
@@ -81,3 +90,21 @@ public class DataInitializer implements CommandLineRunner {
         driverRepository.save(driver);
     }
 }
+=======
+        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
+            return;
+        }
+
+        User admin = User.builder()
+                .email(ADMIN_EMAIL)
+                .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                .fullName("System Administrator")
+                .phoneNumber("0000000000")
+                .role(UserRole.ADMIN)
+                .address("System")
+                .build();
+
+        userRepository.save(admin);
+    }
+}
+>>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21
