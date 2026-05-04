@@ -18,6 +18,9 @@
                     <a href="/admin/bookings" class="btn btn-primary align-self-lg-end">
                         <i class="fa-solid fa-route me-2"></i>Manage Bookings
                     </a>
+                    <a href="/admin/intelligence" class="btn btn-outline-primary align-self-lg-end">
+                        <i class="fa-solid fa-microchip me-2"></i>AI & IoT Ops
+                    </a>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -71,6 +74,26 @@
                         </section>
                     </div>
                 </div>
+
+                <section class="app-card p-4 mb-4">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
+                        <div>
+                            <h4 class="mb-1">MBB Operations</h4>
+                            <div class="text-muted">Module health, route cache, event bridge, and active ride load.</div>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="mini-signal">Cache <span th:text="${intelligenceSnapshot.cachedRoutes()}"></span></span>
+                            <span class="mini-signal">Traffic v<span th:text="${intelligenceSnapshot.trafficRevision()}"></span></span>
+                            <span class="mini-signal">Active <span th:text="${intelligenceSnapshot.activeRides()}"></span></span>
+                        </div>
+                    </div>
+                    <div class="module-health-grid">
+                        <div class="signal-card" th:each="module : ${intelligenceSnapshot.moduleHealth()}">
+                            <strong th:text="${module.key}"></strong>
+                            <span th:text="${module.value}"></span>
+                        </div>
+                    </div>
+                </section>
 
                 <section class="app-card p-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">

@@ -3,6 +3,9 @@ package com.cabbooking.service;
 import com.cabbooking.entity.Driver;
 import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
+import com.cabbooking.mbb.bridge.event.CabEventBridge;
+import com.cabbooking.mbb.module.map.Coordinate;
+import com.cabbooking.mbb.module.map.MapNavigationService;
 import com.cabbooking.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DriverService {
     private final DriverRepository driverRepository;
+    private final MapNavigationService mapNavigationService;
+    private final CabEventBridge cabEventBridge;
 
     public Driver registerDriver(User user, String licenseNumber, String vehicleNumber,
                                 String vehicleModel, String vehicleType,
@@ -48,9 +53,17 @@ public class DriverService {
 
     public Driver updateDriverLocation(Long driverId, Double latitude, Double longitude) {
         Driver driver = getDriverById(driverId);
+        Double previousLatitude = driver.getCurrentLatitude();
+        Double previousLongitude = driver.getCurrentLongitude();
         driver.setCurrentLatitude(latitude);
         driver.setCurrentLongitude(longitude);
-        return driverRepository.save(driver);
+        Driver saved = driverRepository.save(driver);
+        if (mapNavigationService.isMeaningfulMovement(
+                Coordinate.of(previousLatitude, previousLongitude, "Previous driver position"),
+                Coordinate.of(latitude, longitude, "Updated driver position"))) {
+            cabEventBridge.driverLocationChanged(saved, previousLatitude, previousLongitude, "DRIVER_APP");
+        }
+        return saved;
     }
 
     public List<Driver> getAllDrivers() {

@@ -5,6 +5,9 @@ import com.cabbooking.entity.BookingStatus;
 import com.cabbooking.entity.Driver;
 import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
+import com.cabbooking.mbb.module.ai.IntelligenceDashboardService;
+import com.cabbooking.mbb.module.map.TrafficSignalService;
+import com.cabbooking.mbb.module.safety.EmergencyAlertService;
 import com.cabbooking.service.BookingService;
 import com.cabbooking.service.DriverService;
 import com.cabbooking.service.UserService;
@@ -21,6 +24,9 @@ public class AdminController {
     private final DriverService driverService;
     private final BookingService bookingService;
     private final UserService userService;
+    private final IntelligenceDashboardService intelligenceDashboardService;
+    private final TrafficSignalService trafficSignalService;
+    private final EmergencyAlertService emergencyAlertService;
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
@@ -38,6 +44,7 @@ public class AdminController {
         model.addAttribute("completedBookings", bookingService.countByStatus(BookingStatus.COMPLETED));
         model.addAttribute("cancelledBookings", bookingService.countByStatus(BookingStatus.CANCELLED));
         model.addAttribute("completedRevenue", bookingService.getCompletedRevenue());
+        model.addAttribute("intelligenceSnapshot", intelligenceDashboardService.snapshot());
         return "admin/dashboard";
     }
 
@@ -140,5 +147,30 @@ public class AdminController {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
         return "admin/users";
+    }
+
+    @GetMapping("/intelligence")
+    public String intelligence(Model model) {
+        model.addAttribute("snapshot", intelligenceDashboardService.snapshot());
+        return "admin/intelligence";
+    }
+
+    @PostMapping("/traffic/signal")
+    public String signalTraffic(@RequestParam String zone,
+                                @RequestParam(defaultValue = "MEDIUM") String severity) {
+        trafficSignalService.signalTrafficChange(zone, severity);
+        return "redirect:/admin/intelligence?trafficUpdated";
+    }
+
+    @PostMapping("/alerts/{id}/acknowledge")
+    public String acknowledgeAlert(@PathVariable Long id) {
+        emergencyAlertService.acknowledge(id);
+        return "redirect:/admin/intelligence?alertAcknowledged";
+    }
+
+    @PostMapping("/alerts/{id}/resolve")
+    public String resolveAlert(@PathVariable Long id) {
+        emergencyAlertService.resolve(id);
+        return "redirect:/admin/intelligence?alertResolved";
     }
 }

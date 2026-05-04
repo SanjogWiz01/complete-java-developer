@@ -1,6 +1,12 @@
 package com.cabbooking.service;
 
 import com.cabbooking.entity.*;
+import com.cabbooking.mbb.bridge.event.CabEventBridge;
+import com.cabbooking.mbb.module.ai.AIDecisionService;
+import com.cabbooking.mbb.module.ai.DriverMatchCandidate;
+import com.cabbooking.mbb.module.ai.RideIntelligence;
+import com.cabbooking.mbb.module.map.MapNavigationService;
+import com.cabbooking.mbb.module.map.RoutePlan;
 import com.cabbooking.repository.BookingRepository;
 import com.cabbooking.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +23,9 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final DriverRepository driverRepository;
     private final LocationService locationService;
+    private final MapNavigationService mapNavigationService;
+    private final AIDecisionService aiDecisionService;
+    private final CabEventBridge cabEventBridge;
 
     public Booking createBooking(User user, String pickupLocation, String dropoffLocation,
                                 Double pickupLat, Double pickupLon,
@@ -32,10 +42,34 @@ public class BookingService {
                                 LocalDateTime scheduledPickupTime,
                                 String paymentMethod, Integer passengerCount,
                                 String promoCode, String specialInstructions) {
-        Double distance = locationService.calculateDistance(
-                pickupLat, pickupLon, dropoffLat, dropoffLon);
-        Integer duration = locationService.estimateDuration(distance);
-        BigDecimal cost = locationService.calculateCost(distance, duration, vehicleType, promoCode);
+        return createBooking(user, pickupLocation, dropoffLocation, pickupLat, pickupLon,
+                dropoffLat, dropoffLon, vehicleType, rideType, scheduledPickupTime,
+                paymentMethod, passengerCount, promoCode, specialInstructions,
+                false, false, true);
+    }
+
+    public Booking createBooking(User user, String pickupLocation, String dropoffLocation,
+                                Double pickupLat, Double pickupLon,
+                                Double dropoffLat, Double dropoffLon,
+                                String vehicleType, String rideType,
+                                LocalDateTime scheduledPickupTime,
+                                String paymentMethod, Integer passengerCount,
+                                String promoCode, String specialInstructions,
+                                Boolean sharedRideOptIn, Boolean voiceAssisted,
+                                Boolean offlineNavigationEnabled) {
+        String normalizedVehicle = normalizeOption(vehicleType, "SEDAN");
+        String normalizedRideType = normalizeOption(rideType, "RIDE_NOW");
+        String normalizedPayment = normalizeOption(paymentMethod, "CASH");
+        String normalizedPromo = normalizePromoCode(promoCode);
+        Integer safePassengerCount = passengerCount == null || passengerCount < 1 ? 1 : passengerCount;
+        boolean offlineEnabled = offlineNavigationEnabled == null || Boolean.TRUE.equals(offlineNavigationEnabled);
+
+        RoutePlan routePlan = mapNavigationService.planRoute(
+                pickupLocation, dropoffLocation, pickupLat, pickupLon, dropoffLat, dropoffLon,
+                normalizedVehicle, offlineEnabled);
+        RideIntelligence intelligence = aiDecisionService.evaluateRide(
+                user, routePlan, normalizedVehicle, normalizedPromo, safePassengerCount,
+                scheduledPickupTime == null ? LocalDateTime.now() : scheduledPickupTime);
 
         Booking booking = Booking.builder()
                 .user(user)
@@ -45,21 +79,36 @@ public class BookingService {
                 .pickupLongitude(pickupLon)
                 .dropoffLatitude(dropoffLat)
                 .dropoffLongitude(dropoffLon)
-                .estimatedDistance(distance)
-                .estimatedDuration(duration)
-                .estimatedCost(cost)
-                .vehicleType(normalizeOption(vehicleType, "SEDAN"))
-                .rideType(normalizeOption(rideType, "RIDE_NOW"))
+                .estimatedDistance(routePlan.distanceKm())
+                .estimatedDuration(routePlan.durationMinutes())
+                .estimatedCost(intelligence.dynamicFare())
+                .vehicleType(normalizedVehicle)
+                .rideType(normalizedRideType)
                 .scheduledPickupTime(scheduledPickupTime)
-                .paymentMethod(normalizeOption(paymentMethod, "CASH"))
-                .passengerCount(passengerCount == null || passengerCount < 1 ? 1 : passengerCount)
-                .promoCode(normalizePromoCode(promoCode))
+                .paymentMethod(normalizedPayment)
+                .passengerCount(safePassengerCount)
+                .promoCode(normalizedPromo)
+                .sharedRideOptIn(Boolean.TRUE.equals(sharedRideOptIn))
+                .voiceAssisted(Boolean.TRUE.equals(voiceAssisted))
+                .offlineNavigationEnabled(routePlan.offlineFallbackAvailable())
                 .specialInstructions(trimToNull(specialInstructions))
+                .routeSummary(routePlan.routeSummary())
+                .navigationInstructions(routePlan.instructionText())
+                .routeAlgorithm(routePlan.algorithm())
+                .demandMultiplier(intelligence.demandMultiplier())
+                .demandZone(intelligence.demandZone())
+                .fraudRiskScore(intelligence.fraudRiskScore())
+                .fraudRiskLevel(intelligence.fraudRiskLevel())
+                .fraudSignals(String.join("; ", intelligence.fraudReasons()))
+                .smartRouteReason(intelligence.smartRouteReason())
+                .rideShareSummary(summarizeShareOptions(intelligence))
                 .status(BookingStatus.PENDING)
                 .userRating(0.0)
                 .build();
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        cabEventBridge.bookingCreated(saved);
+        return saved;
     }
 
     public Booking getBookingById(Long id) {
@@ -119,16 +168,19 @@ public class BookingService {
             throw new RuntimeException("Only pending bookings can be auto-assigned");
         }
 
-        Driver driver = driverRepository.findByStatus(DriverStatus.AVAILABLE)
-                .stream()
-                .min(Comparator
-                        .comparingDouble((Driver candidate) -> locationService.calculateDistance(
-                                candidate.getCurrentLatitude(),
-                                candidate.getCurrentLongitude(),
-                                booking.getPickupLatitude(),
-                                booking.getPickupLongitude()))
-                        .thenComparing(Comparator.comparing(Driver::getRating).reversed()))
+        RoutePlan routePlan = mapNavigationService.planRoute(
+                booking.getPickupLocation(), booking.getDropoffLocation(),
+                booking.getPickupLatitude(), booking.getPickupLongitude(),
+                booking.getDropoffLatitude(), booking.getDropoffLongitude(),
+                booking.getVehicleType(), Boolean.TRUE.equals(booking.getOfflineNavigationEnabled()));
+        RideIntelligence intelligence = aiDecisionService.evaluateRide(
+                booking.getUser(), routePlan, booking.getVehicleType(), booking.getPromoCode(),
+                booking.getPassengerCount(), booking.getScheduledPickupTime());
+        DriverMatchCandidate candidate = intelligence.driverCandidates().stream()
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("No available drivers found"));
+        Driver driver = driverRepository.findById(candidate.driverId())
+                .orElseThrow(() -> new RuntimeException("Matched driver no longer exists"));
 
         return acceptBooking(bookingId, driver);
     }
@@ -210,6 +262,15 @@ public class BookingService {
             driver.setRating(Math.round(avgRating * 10.0) / 10.0);
             driverRepository.save(driver);
         }
+    }
+
+    private String summarizeShareOptions(RideIntelligence intelligence) {
+        if (intelligence.rideShareOptions().isEmpty()) {
+            return "No compatible shared ride found yet";
+        }
+        return intelligence.rideShareOptions().stream()
+                .map(option -> "#" + option.bookingId() + " detour " + option.detourKm() + " km")
+                .collect(Collectors.joining("; "));
     }
 
     private String normalizeOption(String value, String fallback) {

@@ -1,6 +1,15 @@
 (function () {
     const minimumFare = 50;
     const perKm = 50;
+    const routeDebounceMs = 220;
+    const knownStops = [
+        { aliases: ["lakeside", "lakeside, pokhara"], label: "Lakeside, Pokhara", lat: 28.2096, lng: 83.9856 },
+        { aliases: ["phewa lake", "phewa lake, pokhara"], label: "Phewa Lake, Pokhara", lat: 28.2143, lng: 83.9576 },
+        { aliases: ["airport", "pokhara international airport"], label: "Pokhara International Airport", lat: 28.2009, lng: 83.9821 },
+        { aliases: ["sarangkot", "sarangkot, pokhara"], label: "Sarangkot, Pokhara", lat: 28.2439, lng: 83.9483 },
+        { aliases: ["bindhyabasini", "bindhyabasini temple"], label: "Bindhyabasini Temple, Pokhara", lat: 28.2333, lng: 83.9833 },
+        { aliases: ["prithvi chowk", "prithvi chowk, pokhara"], label: "Prithvi Chowk, Pokhara", lat: 28.2130, lng: 83.9973 }
+    ];
 
     function toNumber(value, fallback) {
         const number = Number.parseFloat(value);
@@ -26,11 +35,30 @@
         if (code === "CITY25") {
             return 25;
         }
+        if (code === "SHARE15") {
+            return subtotal * 0.15;
+        }
         return 0;
     }
 
     function formatMoney(value) {
-        return value.toFixed(2);
+        return Number(value || 0).toFixed(2);
+    }
+
+    function setText(selector, value) {
+        document.querySelectorAll(selector).forEach((el) => {
+            el.textContent = value;
+        });
+    }
+
+    function lookupStop(label) {
+        const normalized = (label || "").toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ").trim();
+        return knownStops.find((stop) => stop.aliases.some((alias) => normalized.includes(alias) || alias.includes(normalized)));
+    }
+
+    function buildRoutePreviewUrl(values) {
+        const params = new URLSearchParams(values);
+        return `/api/routes/preview?${params.toString()}`;
     }
 
     function initBookingMap() {
@@ -47,10 +75,19 @@
         const dropInput = document.getElementById("dropoffLocation");
         const vehicleSelect = document.getElementById("vehicleType");
         const promoInput = document.getElementById("promoCode");
+        const passengerInput = document.getElementById("passengerCount");
+        const offlineToggle = document.getElementById("offlineNavigationEnabled");
         const rideTypeSelect = document.getElementById("rideType");
         const scheduledGroup = document.getElementById("scheduledPickupGroup");
+        const instructionList = document.querySelector("[data-route-instructions]");
+        const driverMatch = document.querySelector("[data-driver-match]");
+        const routeEngine = document.querySelector("[data-route-engine]");
+        const routeCache = document.querySelector("[data-route-cache]");
 
         let activeStop = "pickup";
+        let routeTimer = null;
+        let lastRouteKey = "";
+
         const pickup = [
             toNumber(pickupLatEl.value, 28.2096),
             toNumber(pickupLngEl.value, 83.9856)
@@ -68,7 +105,35 @@
 
         const pickupMarker = L.marker(pickup, { draggable: true }).addTo(map).bindPopup("Pickup");
         const dropoffMarker = L.marker(dropoff, { draggable: true }).addTo(map).bindPopup("Dropoff");
-        let routeLine = L.polyline([pickup, dropoff], { color: "#0f766e", weight: 5 }).addTo(map);
+        let routeLine = L.polyline([pickup, dropoff], { color: "#0f766e", weight: 5, opacity: 0.9 }).addTo(map);
+
+        function currentValues() {
+            return {
+                pickupLocation: pickupInput ? pickupInput.value : "Pickup",
+                dropoffLocation: dropInput ? dropInput.value : "Dropoff",
+                pickupLatitude: pickupLatEl.value,
+                pickupLongitude: pickupLngEl.value,
+                dropoffLatitude: dropLatEl.value,
+                dropoffLongitude: dropLngEl.value,
+                vehicleType: vehicleSelect ? vehicleSelect.value : "SEDAN",
+                promoCode: promoInput ? promoInput.value : "",
+                passengerCount: passengerInput ? passengerInput.value : "1",
+                offlineNavigationEnabled: offlineToggle ? String(offlineToggle.checked) : "true"
+            };
+        }
+
+        function routeKey(values) {
+            return [
+                Number(values.pickupLatitude).toFixed(4),
+                Number(values.pickupLongitude).toFixed(4),
+                Number(values.dropoffLatitude).toFixed(4),
+                Number(values.dropoffLongitude).toFixed(4),
+                values.vehicleType,
+                values.promoCode.trim().toUpperCase(),
+                values.passengerCount,
+                values.offlineNavigationEnabled
+            ].join("|");
+        }
 
         function setStop(type, latLng, label, forceLabel) {
             if (type === "pickup") {
@@ -86,10 +151,11 @@
                     dropInput.value = label;
                 }
             }
-            calculateEstimate();
+            renderFallbackEstimate();
+            scheduleRoutePreview();
         }
 
-        function calculateEstimate() {
+        function renderFallbackEstimate() {
             const pLat = toNumber(pickupLatEl.value, pickup[0]);
             const pLng = toNumber(pickupLngEl.value, pickup[1]);
             const dLat = toNumber(dropLatEl.value, dropoff[0]);
@@ -100,21 +166,73 @@
             const discount = promoDiscount(subtotal, promoInput ? promoInput.value : "");
             const total = Math.max(minimumFare, subtotal - discount);
 
-            document.querySelectorAll("[data-estimate-distance]").forEach((el) => {
-                el.textContent = distance.toFixed(1);
-            });
-            document.querySelectorAll("[data-estimate-duration]").forEach((el) => {
-                el.textContent = String(duration);
-            });
-            document.querySelectorAll("[data-estimate-discount]").forEach((el) => {
-                el.textContent = formatMoney(discount);
-            });
-            document.querySelectorAll("[data-estimate-cost]").forEach((el) => {
-                el.textContent = formatMoney(total);
-            });
+            setText("[data-estimate-distance]", distance.toFixed(1));
+            setText("[data-estimate-duration]", String(duration));
+            setText("[data-estimate-discount]", formatMoney(discount));
+            setText("[data-estimate-cost]", formatMoney(total));
+            setText("[data-demand-label]", "Calculating");
+            setText("[data-demand-multiplier]", "");
 
             routeLine.setLatLngs([[pLat, pLng], [dLat, dLng]]);
             map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+        }
+
+        function scheduleRoutePreview(force) {
+            const values = currentValues();
+            const nextKey = routeKey(values);
+            if (!force && nextKey === lastRouteKey) {
+                return;
+            }
+            lastRouteKey = nextKey;
+            clearTimeout(routeTimer);
+            routeTimer = setTimeout(() => fetchRoutePreview(values), routeDebounceMs);
+        }
+
+        function fetchRoutePreview(values) {
+            fetch(buildRoutePreviewUrl(values), { headers: { "Accept": "application/json" } })
+                .then((response) => response.ok ? response.json() : Promise.reject(new Error("Route preview failed")))
+                .then(renderRoutePreview)
+                .catch(() => {
+                    if (routeCache) {
+                        routeCache.textContent = "Fallback";
+                    }
+                });
+        }
+
+        function renderRoutePreview(preview) {
+            setText("[data-estimate-distance]", Number(preview.distanceKm).toFixed(1));
+            setText("[data-estimate-duration]", String(preview.durationMinutes));
+            setText("[data-estimate-discount]", formatMoney(preview.promoDiscount));
+            setText("[data-estimate-cost]", formatMoney(preview.estimatedFare));
+            setText("[data-demand-label]", preview.demandLabel || "Balanced");
+            setText("[data-demand-multiplier]", `x${Number(preview.demandMultiplier || 1).toFixed(2)}`);
+
+            if (driverMatch) {
+                const bestDriver = (preview.driverCandidates || [])[0];
+                driverMatch.textContent = bestDriver
+                    ? `${bestDriver.driverName} in ${bestDriver.etaMinutes} min`
+                    : "No available driver";
+            }
+            if (routeEngine) {
+                routeEngine.textContent = preview.routeSummary || preview.algorithm || "A* graph";
+            }
+            if (routeCache) {
+                routeCache.textContent = preview.cacheHit ? "Cached" : "Live";
+            }
+            if (instructionList) {
+                instructionList.innerHTML = "";
+                (preview.instructions || []).forEach((instruction) => {
+                    const item = document.createElement("li");
+                    item.textContent = instruction.maneuver;
+                    instructionList.appendChild(item);
+                });
+            }
+
+            const coordinates = (preview.routeCoordinates || []).map((point) => [point[0], point[1]]);
+            if (coordinates.length > 1) {
+                routeLine.setLatLngs(coordinates);
+                map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+            }
         }
 
         pickupInput && pickupInput.addEventListener("focus", () => activeStop = "pickup");
@@ -137,8 +255,32 @@
             });
         });
 
-        [vehicleSelect, promoInput].forEach((input) => {
-            input && input.addEventListener("input", calculateEstimate);
+        document.querySelectorAll("[data-route-suggestion]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const parts = (button.getAttribute("data-route") || "").split(/\s+to\s+/i);
+                if (parts.length !== 2) {
+                    return;
+                }
+                const start = lookupStop(parts[0]);
+                const end = lookupStop(parts[1]);
+                if (start) {
+                    setStop("pickup", { lat: start.lat, lng: start.lng }, start.label, true);
+                }
+                if (end) {
+                    setStop("dropoff", { lat: end.lat, lng: end.lng }, end.label, true);
+                }
+            });
+        });
+
+        [vehicleSelect, promoInput, passengerInput, offlineToggle].forEach((input) => {
+            input && input.addEventListener("input", () => {
+                renderFallbackEstimate();
+                scheduleRoutePreview();
+            });
+            input && input.addEventListener("change", () => {
+                renderFallbackEstimate();
+                scheduleRoutePreview(true);
+            });
         });
 
         function toggleSchedule() {
@@ -150,7 +292,8 @@
 
         rideTypeSelect && rideTypeSelect.addEventListener("change", toggleSchedule);
         toggleSchedule();
-        calculateEstimate();
+        renderFallbackEstimate();
+        scheduleRoutePreview(true);
     }
 
     function initRouteMap() {
@@ -177,6 +320,33 @@
         L.marker(dropoff).addTo(map).bindPopup("Dropoff");
         const routeLine = L.polyline([pickup, dropoff], { color: "#0f766e", weight: 5 }).addTo(map);
         map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+
+        const values = {
+            pickupLocation: mapEl.dataset.pickupLabel || "Pickup",
+            dropoffLocation: mapEl.dataset.dropoffLabel || "Dropoff",
+            pickupLatitude: String(pickup[0]),
+            pickupLongitude: String(pickup[1]),
+            dropoffLatitude: String(dropoff[0]),
+            dropoffLongitude: String(dropoff[1]),
+            vehicleType: mapEl.dataset.vehicleType || "SEDAN",
+            promoCode: mapEl.dataset.promoCode || "",
+            passengerCount: mapEl.dataset.passengerCount || "1",
+            offlineNavigationEnabled: mapEl.dataset.offlineEnabled || "true"
+        };
+
+        fetch(buildRoutePreviewUrl(values), { headers: { "Accept": "application/json" } })
+            .then((response) => response.ok ? response.json() : null)
+            .then((preview) => {
+                if (!preview || !preview.routeCoordinates) {
+                    return;
+                }
+                const coordinates = preview.routeCoordinates.map((point) => [point[0], point[1]]);
+                if (coordinates.length > 1) {
+                    routeLine.setLatLngs(coordinates);
+                    map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+                }
+            })
+            .catch(() => {});
     }
 
     function initClientFilters() {

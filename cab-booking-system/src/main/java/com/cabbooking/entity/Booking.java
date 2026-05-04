@@ -63,8 +63,39 @@ public class Booking {
 
     private String promoCode;
 
+    private Boolean sharedRideOptIn;
+
+    private Boolean voiceAssisted;
+
+    private Boolean offlineNavigationEnabled;
+
     @Column(length = 700)
     private String specialInstructions;
+
+    @Column(length = 1200)
+    private String routeSummary;
+
+    @Column(length = 2500)
+    private String navigationInstructions;
+
+    private String routeAlgorithm;
+
+    private Double demandMultiplier;
+
+    private String demandZone;
+
+    private Double fraudRiskScore;
+
+    private String fraudRiskLevel;
+
+    @Column(length = 900)
+    private String fraudSignals;
+
+    @Column(length = 900)
+    private String smartRouteReason;
+
+    @Column(length = 900)
+    private String rideShareSummary;
 
     @Column(nullable = true)
     private BigDecimal actualCost;
@@ -99,6 +130,24 @@ public class Booking {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         userRating = 0.0;
+        if (sharedRideOptIn == null) {
+            sharedRideOptIn = false;
+        }
+        if (voiceAssisted == null) {
+            voiceAssisted = false;
+        }
+        if (offlineNavigationEnabled == null) {
+            offlineNavigationEnabled = false;
+        }
+        if (demandMultiplier == null) {
+            demandMultiplier = 1.0;
+        }
+        if (fraudRiskScore == null) {
+            fraudRiskScore = 0.0;
+        }
+        if (fraudRiskLevel == null) {
+            fraudRiskLevel = "LOW";
+        }
     }
 
     @PreUpdate

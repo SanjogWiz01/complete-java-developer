@@ -42,6 +42,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/about", "/contact", "/auth/register", "/auth/login",
                         "/static/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                .requestMatchers("/api/iot/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/bookings/**", "/user/**").authenticated()
                 .anyRequest().authenticated()
@@ -61,7 +62,7 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
         )
         .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/iot/**")
         )
         .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())

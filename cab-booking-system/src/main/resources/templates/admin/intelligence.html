@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('AI & IoT Operations')}"></head>
+<body>
+<div th:replace="~{layout :: nav}"></div>
+
+<main class="main-content section-pad">
+    <div class="container-fluid px-4">
+        <div class="admin-layout">
+            <div th:replace="~{layout :: adminSidebar}"></div>
+
+            <div>
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <h1 class="page-title">AI & IoT Operations</h1>
+                        <p class="page-kicker">Demand heatmaps, route cache, telemetry, safety alerts, and module health.</p>
+                    </div>
+                    <a href="/admin/dashboard" class="btn btn-outline-secondary align-self-lg-end">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+
+                <div th:if="${param.trafficUpdated}" class="alert alert-success">Traffic signal received. Route cache was invalidated through the event bridge.</div>
+                <div th:if="${param.alertAcknowledged}" class="alert alert-info">Alert acknowledged.</div>
+                <div th:if="${param.alertResolved}" class="alert alert-success">Alert resolved.</div>
+
+                <section class="app-card p-4 mb-4">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+                        <div>
+                            <h4 class="mb-1">Event Bridge Controls</h4>
+                            <div class="text-muted">Traffic updates trigger cache invalidation without background polling.</div>
+                        </div>
+                        <form action="/admin/traffic/signal" method="post" class="traffic-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input class="form-control" name="zone" value="LAKESIDE" aria-label="Traffic zone">
+                            <select class="form-select" name="severity" aria-label="Traffic severity">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa-solid fa-signal me-2"></i>Send Signal
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-7">
+                        <section class="app-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">Predictive Demand Heatmap</h4>
+                                <span class="mini-signal">Active rides <span th:text="${snapshot.activeRides()}"></span></span>
+                            </div>
+                            <div class="heatmap-grid">
+                                <div class="heatmap-cell" th:each="point : ${snapshot.heatmap()}">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <strong th:text="${point.zone()}"></strong>
+                                        <span th:text="${#numbers.formatDecimal(point.score(), 1, 2)}"></span>
+                                    </div>
+                                    <div class="heatbar">
+                                        <span th:style="|width:${point.score() * 100}%|"></span>
+                                    </div>
+                                    <div class="text-muted small" th:text="${point.label()}"></div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-xl-5">
+                        <section class="app-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">Module Health</h4>
+                                <span class="mini-signal">Traffic v<span th:text="${snapshot.trafficRevision()}"></span></span>
+                            </div>
+                            <div class="module-health-grid">
+                                <div class="signal-card" th:each="module : ${snapshot.moduleHealth()}">
+                                    <strong th:text="${module.key}"></strong>
+                                    <span th:text="${module.value}"></span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <section class="app-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">IoT Vehicle Telemetry</h4>
+                        <span class="mini-signal">Bridge token protected</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Speed</th>
+                                <th>Fuel</th>
+                                <th>Engine</th>
+                                <th>Behavior</th>
+                                <th>Recorded</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="telemetry : ${snapshot.latestTelemetry()}">
+                                <td th:text="${telemetry.driver.user.fullName}"></td>
+                                <td><span th:text="${telemetry.speedKmph != null ? telemetry.speedKmph : 0}"></span> km/h</td>
+                                <td><span th:text="${telemetry.fuelPercentage != null ? telemetry.fuelPercentage : 0}"></span>%</td>
+                                <td th:text="${telemetry.engineStatus}"></td>
+                                <td>
+                                    <span class="status-badge"
+                                          th:classappend="${telemetry.riskLevel == 'HIGH' ? 'status-cancelled' : (telemetry.riskLevel == 'MEDIUM' ? 'status-pending' : 'status-completed')}"
+                                          th:text="${telemetry.behaviorScore + ' / ' + telemetry.riskLevel}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(telemetry.recordedAt, 'dd MMM HH:mm')}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(snapshot.latestTelemetry())}">
+                                <td colspan="6" class="text-center text-muted py-4">No telemetry received yet.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="app-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Emergency Alerts</h4>
+                        <span class="mini-signal">SOS queue</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-6" th:each="alert : ${snapshot.emergencyAlerts()}">
+                            <div class="border rounded p-3 h-100">
+                                <div class="d-flex justify-content-between gap-2 mb-2">
+                                    <strong>#<span th:text="${alert.id}"></span> Booking <span th:text="${alert.booking != null ? alert.booking.id : 'N/A'}"></span></strong>
+                                    <span class="status-badge"
+                                          th:classappend="${alert.status.name() == 'RESOLVED' ? 'status-completed' : (alert.status.name() == 'ACKNOWLEDGED' ? 'status-accepted' : 'status-cancelled')}"
+                                          th:text="${alert.status.name()}"></span>
+                                </div>
+                                <div class="text-muted mb-2" th:text="${alert.message}"></div>
+                                <div class="small text-muted mb-3">
+                                    <span th:text="${alert.latitude}"></span>, <span th:text="${alert.longitude}"></span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <form th:if="${alert.status.name() == 'OPEN'}"
+                                          th:action="@{/admin/alerts/{id}/acknowledge(id=${alert.id})}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <button class="btn btn-outline-primary btn-sm" type="submit">Acknowledge</button>
+                                    </form>
+                                    <form th:if="${alert.status.name() != 'RESOLVED'}"
+                                          th:action="@{/admin/alerts/{id}/resolve(id=${alert.id})}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <button class="btn btn-outline-success btn-sm" type="submit">Resolve</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(snapshot.emergencyAlerts())}" class="col-12 text-center text-muted py-4">
+                            No emergency alerts.
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layout :: footer}"></div>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

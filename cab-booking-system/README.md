@@ -1,6 +1,8 @@
 # 🚖 Online Cab Booking System
 
-An intermediate-level Java Spring Boot project for building a complete online cab booking system with user and admin modules, real-time ride tracking, and intelligent cost estimation.
+An intermediate-level Java Spring Boot project for building a complete online cab management system with user, driver, admin, map, AI optimization, safety, and IoT/circuit integration modules.
+
+The implementation now follows a structured **MBB (Module-Block-Bridge)** architecture. See [MBB_ARCHITECTURE.md](MBB_ARCHITECTURE.md) for module boundaries, blocks, event bridges, and scaling notes.
 
 ## 📋 Features
 
@@ -11,8 +13,14 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 - ✅ Real-time distance and cost estimation at Rs. 50/km
 - ✅ Vehicle type, ride schedule, passenger count, payment mode, promo code, and ride notes
 - ✅ Automatic nearest-driver assignment
+- ✅ AI driver-passenger matching based on proximity, rating, and vehicle fit
+- ✅ Smart route suggestions based on user habits
+- ✅ Ride-sharing opt-in and compatible shared ride detection
+- ✅ Offline fallback navigation and route instruction decoding
+- ✅ Voice-assisted booking flag
 - ✅ View booking history
 - ✅ Track booking status
+- ✅ Emergency/SOS alert from active booking details
 - ✅ Rate and review rides
 - ✅ Cancel bookings
 
@@ -24,11 +32,24 @@ An intermediate-level Java Spring Boot project for building a complete online ca
 - ✅ Track ride status
 - ✅ Monitor system statistics
 - ✅ View user profiles
+- ✅ AI & IoT operations dashboard
+- ✅ Predictive demand heatmaps
+- ✅ SOS alert acknowledgement and resolution
+- ✅ Traffic signal bridge that invalidates route cache through events
 
 ### Location Services
 - ✅ Haversine formula for distance calculation
-- ✅ Intelligent travel time estimation
-- ✅ Distance fare calculation using 1 km = Rs. 50
+- ✅ A* graph pathfinding across Pokhara landmarks
+- ✅ Turn-by-turn, landmark-based route instructions
+- ✅ Route caching with traffic revision invalidation
+- ✅ Dynamic pricing based on demand, vehicle type, and promo codes
+
+### IoT & Safety
+- ✅ Token-protected telemetry bridge at `POST /api/iot/telemetry`
+- ✅ GPS, fuel, engine temperature, braking, acceleration, and speed capture
+- ✅ Driver behavior monitoring and risk scoring
+- ✅ Event-driven driver location updates after meaningful movement
+- ✅ Fraud and anomaly scoring for new bookings
 
 ## 🛠️ Technology Stack
 
@@ -63,6 +84,13 @@ cab-booking-system/
 │   │   │   ├── DriverService.java
 │   │   │   ├── BookingService.java
 │   │   │   └── LocationService.java
+│   │   ├── mbb/                             (Module-Block-Bridge architecture)
+│   │   │   ├── bridge/event                 (Spring domain events)
+│   │   │   └── module/
+│   │   │       ├── ai                       (Matching, demand, pricing, fraud)
+│   │   │       ├── iot                      (Telemetry and behavior monitoring)
+│   │   │       ├── map                      (A*, graph, Haversine, cache)
+│   │   │       └── safety                   (SOS alerts)
 │   │   ├── controller/                      (Web controllers)
 │   │   │   ├── HomeController.java
 │   │   │   ├── AuthController.java
@@ -219,6 +247,12 @@ This project teaches you:
 - `POST /admin/bookings/{id}/assign/{driverId}` - Assign driver
 - `POST /admin/bookings/{id}/start` - Start ride
 - `POST /admin/bookings/{id}/complete` - Complete ride
+- `GET /admin/intelligence` - AI, IoT, route cache, heatmap, and SOS dashboard
+- `POST /admin/traffic/signal` - Publish traffic signal and invalidate route cache
+
+### MBB Bridge APIs
+- `GET /api/routes/preview` - Route, fare, demand, driver match, and instruction preview
+- `POST /api/iot/telemetry` - Token-protected vehicle telemetry ingestion
 
 ## 💡 Key Classes & Methods
 

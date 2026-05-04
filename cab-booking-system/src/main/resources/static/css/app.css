@@ -215,6 +215,24 @@ a {
     overflow: hidden;
 }
 
+.route-suggestion-strip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+}
+
+.toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f8fbfc;
+}
+
 .estimate-panel {
     position: sticky;
     top: 92px;
@@ -236,6 +254,41 @@ a {
     font-size: 2rem;
     font-weight: 850;
     color: var(--primary-dark);
+}
+
+.route-instruction-box {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f8fbfc;
+    padding: 14px;
+}
+
+.instruction-list {
+    padding-left: 1.2rem;
+}
+
+.instruction-list li {
+    margin-bottom: 8px;
+}
+
+.route-instructions {
+    white-space: pre-line;
+    line-height: 1.7;
+    color: #31434a;
+    border-left: 4px solid var(--primary);
+    padding-left: 16px;
+}
+
+.mini-signal {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 0.28rem 0.72rem;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 0.78rem;
+    font-weight: 800;
 }
 
 .status-badge {
@@ -337,6 +390,69 @@ a {
     color: var(--primary);
 }
 
+.module-health-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.signal-card {
+    display: grid;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    background: #f8fbfc;
+}
+
+.signal-card span {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.heatmap-cell {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    background: #ffffff;
+}
+
+.heatbar {
+    height: 10px;
+    margin: 12px 0 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.heatbar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #22c55e, #f59e0b, #dc2626);
+}
+
+.traffic-form {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) 150px auto;
+    gap: 10px;
+    align-items: center;
+    min-width: min(100%, 560px);
+}
+
+.sos-panel {
+    padding: 12px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fef2f2;
+}
+
 .auth-shell {
     min-height: 100vh;
     display: flex;
@@ -390,8 +506,15 @@ footer {
 
     .metric-strip,
     .feature-grid,
-    .timeline {
+    .timeline,
+    .toggle-grid,
+    .module-health-grid,
+    .heatmap-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .traffic-form {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -403,7 +526,10 @@ footer {
     .hero-actions,
     .metric-strip,
     .feature-grid,
-    .timeline {
+    .timeline,
+    .toggle-grid,
+    .module-health-grid,
+    .heatmap-grid {
         grid-template-columns: 1fr;
     }
 

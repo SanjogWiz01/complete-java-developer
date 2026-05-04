@@ -2,6 +2,7 @@ package com.cabbooking.controller;
 
 import com.cabbooking.entity.Booking;
 import com.cabbooking.entity.User;
+import com.cabbooking.mbb.module.ai.SmartRouteSuggestionService;
 import com.cabbooking.service.BookingService;
 import com.cabbooking.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,14 @@ import java.util.List;
 public class BookingController {
     private final BookingService bookingService;
     private final UserService userService;
+    private final SmartRouteSuggestionService smartRouteSuggestionService;
 
     @GetMapping("/book")
-    public String showBookingForm() {
+    public String showBookingForm(Authentication authentication, Model model) {
+        if (authentication != null) {
+            userService.findByEmail(authentication.getName())
+                    .ifPresent(user -> model.addAttribute("smartSuggestions", smartRouteSuggestionService.suggestionsFor(user)));
+        }
         return "booking/book";
     }
 
@@ -41,6 +47,9 @@ public class BookingController {
             @RequestParam(defaultValue = "1") Integer passengerCount,
             @RequestParam(required = false) String promoCode,
             @RequestParam(required = false) String specialInstructions,
+            @RequestParam(required = false, defaultValue = "false") Boolean sharedRideOptIn,
+            @RequestParam(required = false, defaultValue = "false") Boolean voiceAssisted,
+            @RequestParam(required = false, defaultValue = "true") Boolean offlineNavigationEnabled,
             @RequestParam(required = false, defaultValue = "false") Boolean autoAssign,
             Authentication authentication,
             Model model) {
@@ -52,7 +61,8 @@ public class BookingController {
                     user, pickupLocation, dropoffLocation,
                     pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude,
                     vehicleType, rideType, scheduledPickupTime, paymentMethod,
-                    passengerCount, promoCode, specialInstructions);
+                    passengerCount, promoCode, specialInstructions,
+                    sharedRideOptIn, voiceAssisted, offlineNavigationEnabled);
 
             if (Boolean.TRUE.equals(autoAssign)) {
                 try {
