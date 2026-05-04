@@ -65,10 +65,10 @@ public class MapNavigationService {
         double distanceKm = round(sumDistance(path));
         int durationMinutes = Math.max(1, (int) Math.ceil((distanceKm / CITY_SPEED_KMPH) * 60));
         List<RouteInstruction> instructions = instructionDecoder.decode(path);
-        String summary = "A* route via " + startNode.landmark() + " and " + endNode.landmark();
+        String summary = "Shortest available route via " + startNode.landmark() + " and " + endNode.landmark();
 
         RoutePlan plan = new RoutePlan(pickup, dropoff, path, instructions, distanceKm, durationMinutes,
-                "A_STAR_CITY_GRAPH", summary, cacheKey, false, offlineAllowed);
+                "A_STAR_SHORTEST_PATH", summary, cacheKey, false, offlineAllowed);
         return routeCacheService.put(cacheKey, plan);
     }
 

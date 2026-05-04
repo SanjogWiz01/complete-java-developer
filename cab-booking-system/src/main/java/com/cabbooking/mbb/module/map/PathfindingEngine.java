@@ -26,7 +26,7 @@ public class PathfindingEngine {
             }
 
             for (MapEdge edge : graph.neighbors(current)) {
-                double candidateCost = bestCost.get(current) + edge.weightedDistance();
+                double candidateCost = bestCost.get(current) + edge.distanceKm();
                 if (candidateCost < bestCost.getOrDefault(edge.toNodeId(), Double.MAX_VALUE)) {
                     previous.put(edge.toNodeId(), current);
                     bestCost.put(edge.toNodeId(), candidateCost);

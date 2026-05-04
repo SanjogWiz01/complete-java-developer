@@ -61,6 +61,49 @@
         return `/api/routes/preview?${params.toString()}`;
     }
 
+    function validCoordinate(point) {
+        return Array.isArray(point)
+            && point.length === 2
+            && Number.isFinite(point[0])
+            && Number.isFinite(point[1])
+            && point[0] >= 27.8
+            && point[0] <= 28.6
+            && point[1] >= 83.5
+            && point[1] <= 84.4;
+    }
+
+    function safeRouteCoordinates(rawCoordinates, fallback) {
+        const coordinates = (rawCoordinates || []).map((point) => [Number(point[0]), Number(point[1])]);
+        const filtered = coordinates.filter(validCoordinate);
+        return filtered.length > 1 ? filtered : fallback;
+    }
+
+    function fitRoute(map, routeLine, coordinates) {
+        routeLine.setLatLngs(coordinates);
+        const bounds = routeLine.getBounds();
+        if (bounds && bounds.isValid()) {
+            map.fitBounds(bounds.pad(0.18), {
+                animate: true,
+                duration: 0.35,
+                paddingTopLeft: [34, 34],
+                paddingBottomRight: [34, 34],
+                maxZoom: 15
+            });
+        }
+    }
+
+    function createStopIcon(type) {
+        const icon = type === "pickup" ? "fa-location-dot" : "fa-flag-checkered";
+        const label = type === "pickup" ? "P" : "D";
+        return L.divIcon({
+            className: `route-marker route-marker-${type}`,
+            html: `<span><i class="fa-solid ${icon}"></i></span><strong>${label}</strong>`,
+            iconSize: [42, 42],
+            iconAnchor: [21, 38],
+            popupAnchor: [0, -34]
+        });
+    }
+
     function initBookingMap() {
         const mapEl = document.getElementById("bookingMap");
         if (!mapEl || typeof L === "undefined") {
@@ -97,15 +140,35 @@
             toNumber(dropLngEl.value, 83.9821)
         ];
 
-        const map = L.map(mapEl).setView(pickup, 13);
+        const pokharaBounds = L.latLngBounds([27.8, 83.5], [28.6, 84.4]);
+        const map = L.map(mapEl, {
+            maxBounds: pokharaBounds,
+            maxBoundsViscosity: 0.65,
+            zoomControl: false
+        }).setView(pickup, 13);
+        L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
+            noWrap: true,
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
 
-        const pickupMarker = L.marker(pickup, { draggable: true }).addTo(map).bindPopup("Pickup");
-        const dropoffMarker = L.marker(dropoff, { draggable: true }).addTo(map).bindPopup("Dropoff");
-        let routeLine = L.polyline([pickup, dropoff], { color: "#0f766e", weight: 5, opacity: 0.9 }).addTo(map);
+        const pickupMarker = L.marker(pickup, { draggable: true, icon: createStopIcon("pickup") }).addTo(map).bindPopup("Pickup");
+        const dropoffMarker = L.marker(dropoff, { draggable: true, icon: createStopIcon("dropoff") }).addTo(map).bindPopup("Dropoff");
+        const routeHalo = L.polyline([pickup, dropoff], {
+            color: "#ffffff",
+            weight: 11,
+            opacity: 0.95,
+            lineCap: "round",
+            lineJoin: "round"
+        }).addTo(map);
+        let routeLine = L.polyline([pickup, dropoff], {
+            color: "#1d4ed8",
+            weight: 6,
+            opacity: 0.96,
+            lineCap: "round",
+            lineJoin: "round"
+        }).addTo(map);
 
         function currentValues() {
             return {
@@ -173,8 +236,9 @@
             setText("[data-demand-label]", "Calculating");
             setText("[data-demand-multiplier]", "");
 
-            routeLine.setLatLngs([[pLat, pLng], [dLat, dLng]]);
-            map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+            const fallbackRoute = [[pLat, pLng], [dLat, dLng]];
+            fitRoute(map, routeHalo, fallbackRoute);
+            fitRoute(map, routeLine, fallbackRoute);
         }
 
         function scheduleRoutePreview(force) {
@@ -214,7 +278,7 @@
                     : "No available driver";
             }
             if (routeEngine) {
-                routeEngine.textContent = preview.routeSummary || preview.algorithm || "A* graph";
+                routeEngine.textContent = preview.routeSummary || preview.algorithm || "Shortest route";
             }
             if (routeCache) {
                 routeCache.textContent = preview.cacheHit ? "Cached" : "Live";
@@ -228,10 +292,14 @@
                 });
             }
 
-            const coordinates = (preview.routeCoordinates || []).map((point) => [point[0], point[1]]);
+            const fallbackRoute = [
+                [toNumber(pickupLatEl.value, pickup[0]), toNumber(pickupLngEl.value, pickup[1])],
+                [toNumber(dropLatEl.value, dropoff[0]), toNumber(dropLngEl.value, dropoff[1])]
+            ];
+            const coordinates = safeRouteCoordinates(preview.routeCoordinates, fallbackRoute);
             if (coordinates.length > 1) {
-                routeLine.setLatLngs(coordinates);
-                map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+                fitRoute(map, routeHalo, coordinates);
+                fitRoute(map, routeLine, coordinates);
             }
         }
 
@@ -311,15 +379,36 @@
             toNumber(mapEl.dataset.dropoffLng, 83.9821)
         ];
 
-        const map = L.map(mapEl).setView(pickup, 13);
+        const pokharaBounds = L.latLngBounds([27.8, 83.5], [28.6, 84.4]);
+        const map = L.map(mapEl, {
+            maxBounds: pokharaBounds,
+            maxBoundsViscosity: 0.65,
+            zoomControl: false
+        }).setView(pickup, 13);
+        L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
+            noWrap: true,
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
-        L.marker(pickup).addTo(map).bindPopup("Pickup");
-        L.marker(dropoff).addTo(map).bindPopup("Dropoff");
-        const routeLine = L.polyline([pickup, dropoff], { color: "#0f766e", weight: 5 }).addTo(map);
-        map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+        L.marker(pickup, { icon: createStopIcon("pickup") }).addTo(map).bindPopup("Pickup");
+        L.marker(dropoff, { icon: createStopIcon("dropoff") }).addTo(map).bindPopup("Dropoff");
+        const routeHalo = L.polyline([pickup, dropoff], {
+            color: "#ffffff",
+            weight: 11,
+            opacity: 0.95,
+            lineCap: "round",
+            lineJoin: "round"
+        }).addTo(map);
+        const routeLine = L.polyline([pickup, dropoff], {
+            color: "#1d4ed8",
+            weight: 6,
+            opacity: 0.96,
+            lineCap: "round",
+            lineJoin: "round"
+        }).addTo(map);
+        fitRoute(map, routeHalo, [pickup, dropoff]);
+        fitRoute(map, routeLine, [pickup, dropoff]);
 
         const values = {
             pickupLocation: mapEl.dataset.pickupLabel || "Pickup",
@@ -340,10 +429,10 @@
                 if (!preview || !preview.routeCoordinates) {
                     return;
                 }
-                const coordinates = preview.routeCoordinates.map((point) => [point[0], point[1]]);
+                const coordinates = safeRouteCoordinates(preview.routeCoordinates, [pickup, dropoff]);
                 if (coordinates.length > 1) {
-                    routeLine.setLatLngs(coordinates);
-                    map.fitBounds(routeLine.getBounds(), { padding: [28, 28] });
+                    fitRoute(map, routeHalo, coordinates);
+                    fitRoute(map, routeLine, coordinates);
                 }
             })
             .catch(() => {});
