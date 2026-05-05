@@ -48,7 +48,14 @@
                                  th:attr="data-pickup-lat=${booking.pickupLatitude},
                                           data-pickup-lng=${booking.pickupLongitude},
                                           data-dropoff-lat=${booking.dropoffLatitude},
-                                          data-dropoff-lng=${booking.dropoffLongitude}"></div>
+                                          data-dropoff-lng=${booking.dropoffLongitude},
+                                          data-pickup-label=${booking.pickupLocation},
+                                          data-dropoff-label=${booking.dropoffLocation},
+                                          data-vehicle-type=${booking.vehicleType},
+                                          data-promo-code=${booking.promoCode},
+                                          data-passenger-count=${booking.passengerCount},
+                                          data-ride-mode=${booking.rideMode},
+                                          data-offline-enabled=${booking.offlineNavigationEnabled}"></div>
                         </section>
 
                         <section class="app-card p-4">
@@ -78,9 +85,33 @@
                                     <div class="text-muted">Duration</div>
                                     <strong><span th:text="${booking.estimatedDuration}"></span> min</strong>
                                 </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Ride Mode</div>
+                                    <strong th:text="${booking.rideModeLabel != null ? booking.rideModeLabel : 'Smart Balance'}"></strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Assurance</div>
+                                    <strong><span th:text="${booking.matchConfidenceScore != null ? T(java.lang.Math).round(booking.matchConfidenceScore * 100) : 0}"></span>%</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Eco Saving</div>
+                                    <strong><span th:text="${booking.ecoSavingsKg != null ? #numbers.formatDecimal(booking.ecoSavingsKg, 1, 2) : '0.00'}"></span> kg</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-muted">Fraud Risk</div>
+                                    <strong th:text="${booking.fraudRiskLevel != null ? booking.fraudRiskLevel : 'LOW'}"></strong>
+                                </div>
                                 <div class="col-12" th:if="${booking.specialInstructions != null}">
                                     <div class="text-muted">Notes</div>
                                     <strong th:text="${booking.specialInstructions}"></strong>
+                                </div>
+                                <div class="col-12" th:if="${booking.rideModeReason != null}">
+                                    <div class="text-muted">Mode Intelligence</div>
+                                    <strong th:text="${booking.rideModeReason}"></strong>
+                                </div>
+                                <div class="col-12" th:if="${booking.fraudSignals != null}">
+                                    <div class="text-muted">Risk Signals</div>
+                                    <strong th:text="${booking.fraudSignals}"></strong>
                                 </div>
                             </div>
                         </section>

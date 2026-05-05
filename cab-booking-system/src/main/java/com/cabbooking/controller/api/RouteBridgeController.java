@@ -41,6 +41,7 @@ public class RouteBridgeController {
                                         @RequestParam(defaultValue = "SEDAN") String vehicleType,
                                         @RequestParam(required = false) String promoCode,
                                         @RequestParam(defaultValue = "1") Integer passengerCount,
+                                        @RequestParam(defaultValue = "BALANCED") String rideMode,
                                         @RequestParam(defaultValue = "true") Boolean offlineNavigationEnabled,
                                         Authentication authentication) {
         User user = authentication == null ? null
@@ -50,11 +51,11 @@ public class RouteBridgeController {
                 pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude,
                 vehicleType, Boolean.TRUE.equals(offlineNavigationEnabled));
         RideIntelligence intelligence = aiDecisionService.evaluateRide(
-                user, routePlan, vehicleType, promoCode, passengerCount, LocalDateTime.now());
+                user, routePlan, vehicleType, promoCode, passengerCount, rideMode, LocalDateTime.now());
 
         return new RoutePreviewResponse(
                 routePlan.distanceKm(),
-                routePlan.durationMinutes(),
+                intelligence.adjustedDurationMinutes(),
                 intelligence.dynamicFare(),
                 intelligence.promoDiscount(),
                 intelligence.demandMultiplier(),
@@ -62,6 +63,11 @@ public class RouteBridgeController {
                 intelligence.demandLabel(),
                 intelligence.fraudRiskScore(),
                 intelligence.fraudRiskLevel(),
+                intelligence.rideMode(),
+                intelligence.rideModeLabel(),
+                intelligence.rideModeReason(),
+                intelligence.matchConfidenceScore(),
+                intelligence.ecoSavingsKg(),
                 routePlan.routeSummary(),
                 routePlan.algorithm(),
                 routePlan.cacheHit(),
@@ -84,6 +90,11 @@ public class RouteBridgeController {
             String demandLabel,
             double fraudRiskScore,
             String fraudRiskLevel,
+            String rideMode,
+            String rideModeLabel,
+            String rideModeReason,
+            double matchConfidenceScore,
+            double ecoSavingsKg,
             String routeSummary,
             String algorithm,
             boolean cacheHit,

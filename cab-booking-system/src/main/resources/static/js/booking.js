@@ -10,6 +10,13 @@
         { aliases: ["bindhyabasini", "bindhyabasini temple"], label: "Bindhyabasini Temple, Pokhara", lat: 28.2333, lng: 83.9833 },
         { aliases: ["prithvi chowk", "prithvi chowk, pokhara"], label: "Prithvi Chowk, Pokhara", lat: 28.2130, lng: 83.9973 }
     ];
+    const rideModeProfiles = {
+        BALANCED: { label: "Smart Balance", fare: 1.00, duration: 1.00, assurance: 74, eco: 0 },
+        FASTEST: { label: "Fastest ETA", fare: 1.12, duration: 0.88, assurance: 78, eco: 0 },
+        ECONOMY: { label: "Economy", fare: 0.93, duration: 1.06, assurance: 70, eco: 0.04 },
+        SAFETY: { label: "Safety+", fare: 1.06, duration: 1.04, assurance: 88, eco: 0.02 },
+        ECO: { label: "Eco Ride", fare: 0.97, duration: 1.08, assurance: 76, eco: 0.16 }
+    };
 
     function toNumber(value, fallback) {
         const number = Number.parseFloat(value);
@@ -49,6 +56,15 @@
         document.querySelectorAll(selector).forEach((el) => {
             el.textContent = value;
         });
+    }
+
+    function selectedRideMode() {
+        const selected = document.querySelector("input[name='rideMode']:checked");
+        return selected ? selected.value : "BALANCED";
+    }
+
+    function rideModeProfile(value) {
+        return rideModeProfiles[(value || "BALANCED").toUpperCase()] || rideModeProfiles.BALANCED;
     }
 
     function lookupStop(label) {
@@ -121,11 +137,15 @@
         const passengerInput = document.getElementById("passengerCount");
         const offlineToggle = document.getElementById("offlineNavigationEnabled");
         const rideTypeSelect = document.getElementById("rideType");
+        const rideModeInputs = Array.from(document.querySelectorAll("input[name='rideMode']"));
         const scheduledGroup = document.getElementById("scheduledPickupGroup");
         const instructionList = document.querySelector("[data-route-instructions]");
         const driverMatch = document.querySelector("[data-driver-match]");
         const routeEngine = document.querySelector("[data-route-engine]");
         const routeCache = document.querySelector("[data-route-cache]");
+        const modeLabel = document.querySelector("[data-mode-label]");
+        const matchConfidence = document.querySelector("[data-match-confidence]");
+        const ecoSavings = document.querySelector("[data-eco-savings]");
 
         let activeStop = "pickup";
         let routeTimer = null;
@@ -181,6 +201,7 @@
                 vehicleType: vehicleSelect ? vehicleSelect.value : "SEDAN",
                 promoCode: promoInput ? promoInput.value : "",
                 passengerCount: passengerInput ? passengerInput.value : "1",
+                rideMode: selectedRideMode(),
                 offlineNavigationEnabled: offlineToggle ? String(offlineToggle.checked) : "true"
             };
         }
@@ -192,6 +213,7 @@
                 Number(values.dropoffLatitude).toFixed(4),
                 Number(values.dropoffLongitude).toFixed(4),
                 values.vehicleType,
+                values.rideMode,
                 values.promoCode.trim().toUpperCase(),
                 values.passengerCount,
                 values.offlineNavigationEnabled
@@ -224,8 +246,9 @@
             const dLat = toNumber(dropLatEl.value, dropoff[0]);
             const dLng = toNumber(dropLngEl.value, dropoff[1]);
             const distance = distanceKm(pLat, pLng, dLat, dLng);
-            const duration = Math.ceil((distance / 40) * 60);
-            const subtotal = Math.max(minimumFare, distance * perKm);
+            const mode = rideModeProfile(selectedRideMode());
+            const duration = Math.max(1, Math.ceil(((distance / 40) * 60) * mode.duration));
+            const subtotal = Math.max(minimumFare, distance * perKm) * mode.fare;
             const discount = promoDiscount(subtotal, promoInput ? promoInput.value : "");
             const total = Math.max(minimumFare, subtotal - discount);
 
@@ -235,6 +258,15 @@
             setText("[data-estimate-cost]", formatMoney(total));
             setText("[data-demand-label]", "Calculating");
             setText("[data-demand-multiplier]", "");
+            if (modeLabel) {
+                modeLabel.textContent = mode.label;
+            }
+            if (matchConfidence) {
+                matchConfidence.textContent = `${mode.assurance}%`;
+            }
+            if (ecoSavings) {
+                ecoSavings.textContent = formatMoney(distance * mode.eco);
+            }
 
             const fallbackRoute = [[pLat, pLng], [dLat, dLng]];
             fitRoute(map, routeHalo, fallbackRoute);
@@ -270,6 +302,15 @@
             setText("[data-estimate-cost]", formatMoney(preview.estimatedFare));
             setText("[data-demand-label]", preview.demandLabel || "Balanced");
             setText("[data-demand-multiplier]", `x${Number(preview.demandMultiplier || 1).toFixed(2)}`);
+            if (modeLabel) {
+                modeLabel.textContent = preview.rideModeLabel || rideModeProfile(preview.rideMode).label;
+            }
+            if (matchConfidence) {
+                matchConfidence.textContent = `${Math.round(Number(preview.matchConfidenceScore || 0.74) * 100)}%`;
+            }
+            if (ecoSavings) {
+                ecoSavings.textContent = formatMoney(preview.ecoSavingsKg);
+            }
 
             if (driverMatch) {
                 const bestDriver = (preview.driverCandidates || [])[0];
@@ -340,6 +381,23 @@
             });
         });
 
+        function syncRideModeCards() {
+            rideModeInputs.forEach((input) => {
+                const card = input.closest(".ride-mode-card");
+                if (card) {
+                    card.classList.toggle("active", input.checked);
+                }
+            });
+        }
+
+        rideModeInputs.forEach((input) => {
+            input.addEventListener("change", () => {
+                syncRideModeCards();
+                renderFallbackEstimate();
+                scheduleRoutePreview(true);
+            });
+        });
+
         [vehicleSelect, promoInput, passengerInput, offlineToggle].forEach((input) => {
             input && input.addEventListener("input", () => {
                 renderFallbackEstimate();
@@ -359,6 +417,7 @@
         }
 
         rideTypeSelect && rideTypeSelect.addEventListener("change", toggleSchedule);
+        syncRideModeCards();
         toggleSchedule();
         renderFallbackEstimate();
         scheduleRoutePreview(true);
@@ -420,6 +479,7 @@
             vehicleType: mapEl.dataset.vehicleType || "SEDAN",
             promoCode: mapEl.dataset.promoCode || "",
             passengerCount: mapEl.dataset.passengerCount || "1",
+            rideMode: mapEl.dataset.rideMode || "BALANCED",
             offlineNavigationEnabled: mapEl.dataset.offlineEnabled || "true"
         };
 

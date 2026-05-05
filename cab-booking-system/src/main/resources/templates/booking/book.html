@@ -77,6 +77,42 @@
                         <input type="datetime-local" class="form-control" id="scheduledPickupTime" name="scheduledPickupTime">
                     </div>
 
+                    <div class="col-12">
+                        <label class="form-label">Ride Mode</label>
+                        <div class="ride-mode-grid" data-ride-mode-grid>
+                            <label class="ride-mode-card active">
+                                <input class="form-check-input" type="radio" name="rideMode" value="BALANCED" checked>
+                                <span class="mode-icon"><i class="fa-solid fa-sliders"></i></span>
+                                <strong>Smart Balance</strong>
+                                <small>ETA, fare, route, and rating balance.</small>
+                            </label>
+                            <label class="ride-mode-card">
+                                <input class="form-check-input" type="radio" name="rideMode" value="FASTEST">
+                                <span class="mode-icon"><i class="fa-solid fa-bolt"></i></span>
+                                <strong>Fastest ETA</strong>
+                                <small>Closer driver priority with quicker pickup.</small>
+                            </label>
+                            <label class="ride-mode-card">
+                                <input class="form-check-input" type="radio" name="rideMode" value="ECONOMY">
+                                <span class="mode-icon"><i class="fa-solid fa-coins"></i></span>
+                                <strong>Economy</strong>
+                                <small>Lower fare with standard availability.</small>
+                            </label>
+                            <label class="ride-mode-card">
+                                <input class="form-check-input" type="radio" name="rideMode" value="SAFETY">
+                                <span class="mode-icon"><i class="fa-solid fa-shield-heart"></i></span>
+                                <strong>Safety+</strong>
+                                <small>High-rated driver and stable route focus.</small>
+                            </label>
+                            <label class="ride-mode-card">
+                                <input class="form-check-input" type="radio" name="rideMode" value="ECO">
+                                <span class="mode-icon"><i class="fa-solid fa-leaf"></i></span>
+                                <strong>Eco Ride</strong>
+                                <small>Efficient vehicle and lower-impact routing.</small>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="col-md-6">
                         <label for="passengerCount" class="form-label">Passengers</label>
                         <input type="number" class="form-control" id="passengerCount" name="passengerCount" min="1" max="6" value="1">
@@ -164,6 +200,10 @@
                         <strong><span data-demand-label>Calculating</span> <span data-demand-multiplier></span></strong>
                     </div>
                     <div class="estimate-row">
+                        <span>Ride mode</span>
+                        <strong data-mode-label>Smart Balance</strong>
+                    </div>
+                    <div class="estimate-row">
                         <span>Travel Time</span>
                         <strong><span data-estimate-duration>0</span> min</strong>
                     </div>
@@ -174,6 +214,14 @@
                     <div class="estimate-row">
                         <span>Driver match</span>
                         <strong data-driver-match>Checking nearby drivers</strong>
+                    </div>
+                    <div class="estimate-row">
+                        <span>Assurance</span>
+                        <strong data-match-confidence>74%</strong>
+                    </div>
+                    <div class="estimate-row">
+                        <span>Eco saving</span>
+                        <strong><span data-eco-savings>0.00</span> kg</strong>
                     </div>
                     <div class="estimate-row">
                         <span>Route engine</span>

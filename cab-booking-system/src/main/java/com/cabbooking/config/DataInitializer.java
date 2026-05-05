@@ -1,15 +1,10 @@
 package com.cabbooking.config;
 
-<<<<<<< HEAD
 import com.cabbooking.entity.Driver;
 import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
 import com.cabbooking.entity.UserRole;
 import com.cabbooking.repository.DriverRepository;
-=======
-import com.cabbooking.entity.User;
-import com.cabbooking.entity.UserRole;
->>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21
 import com.cabbooking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -23,15 +18,11 @@ public class DataInitializer implements CommandLineRunner {
     private static final String ADMIN_PASSWORD = "admin123";
 
     private final UserRepository userRepository;
-<<<<<<< HEAD
     private final DriverRepository driverRepository;
-=======
->>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-<<<<<<< HEAD
         if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
             User admin = User.builder()
                     .email(ADMIN_EMAIL)
@@ -54,6 +45,9 @@ public class DataInitializer implements CommandLineRunner {
         seedDriver("nisha.driver@example.com", "Nisha Rana", "9800000003",
                 "KA-03-EF-6690", "BA 4 PA 6690", "Honda Amaze", "MINI",
                 28.2439, 83.9483, DriverStatus.OFFLINE);
+        seedDriver("karma.driver@example.com", "Karma Gurung", "9800000004",
+                "KA-04-GH-7714", "BA 5 PA 7714", "Suzuki Dzire", "SEDAN",
+                28.2333, 83.9833, DriverStatus.AVAILABLE);
     }
 
     private void seedDriver(String email, String fullName, String phoneNumber,
@@ -90,21 +84,3 @@ public class DataInitializer implements CommandLineRunner {
         driverRepository.save(driver);
     }
 }
-=======
-        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
-            return;
-        }
-
-        User admin = User.builder()
-                .email(ADMIN_EMAIL)
-                .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                .fullName("System Administrator")
-                .phoneNumber("0000000000")
-                .role(UserRole.ADMIN)
-                .address("System")
-                .build();
-
-        userRepository.save(admin);
-    }
-}
->>>>>>> 4cafa2b830bfd0d206439a525322e9fecd9b9e21

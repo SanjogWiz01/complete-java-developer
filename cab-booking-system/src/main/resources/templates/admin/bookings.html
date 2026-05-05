@@ -34,6 +34,7 @@
                                 <th>User</th>
                                 <th>Route</th>
                                 <th>Driver</th>
+                                <th>Mode</th>
                                 <th>Status</th>
                                 <th>Fare</th>
                                 <th>Created</th>
@@ -62,6 +63,12 @@
                                     <span th:if="${booking.driver == null}" class="text-muted">Unassigned</span>
                                 </td>
                                 <td>
+                                    <span class="mini-signal" th:text="${booking.rideModeLabel != null ? booking.rideModeLabel : 'Smart Balance'}"></span>
+                                    <div class="text-muted">
+                                        <span th:text="${booking.matchConfidenceScore != null ? T(java.lang.Math).round(booking.matchConfidenceScore * 100) : 0}"></span>% assurance
+                                    </div>
+                                </td>
+                                <td>
                                     <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
                                           th:text="${booking.status.name()}"></span>
                                 </td>
@@ -72,7 +79,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${bookings.empty}">
-                                <td colspan="8" class="text-center text-muted py-4">No bookings found.</td>
+                                <td colspan="9" class="text-center text-muted py-4">No bookings found.</td>
                             </tr>
                             </tbody>
                         </table>

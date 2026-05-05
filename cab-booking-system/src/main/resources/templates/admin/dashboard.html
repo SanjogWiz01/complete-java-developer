@@ -75,6 +75,27 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value"><span th:text="${averageAssurance}"></span>%</div>
+                            <div class="metric-label">Avg ride assurance</div>
+                        </section>
+                    </div>
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value" th:text="${highRiskBookings}"></div>
+                            <div class="metric-label">Risk review queue</div>
+                        </section>
+                    </div>
+                    <div class="col-md-4">
+                        <section class="app-card stat-card">
+                            <div class="metric-value"><span th:text="${ecoSavingsTotal}"></span> kg</div>
+                            <div class="metric-label">Estimated eco savings</div>
+                        </section>
+                    </div>
+                </div>
+
                 <section class="app-card p-4 mb-4">
                     <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
                         <div>
@@ -107,6 +128,7 @@
                                 <th>ID</th>
                                 <th>User</th>
                                 <th>Route</th>
+                                <th>Mode</th>
                                 <th>Status</th>
                                 <th>Fare</th>
                                 <th></th>
@@ -122,6 +144,9 @@
                                     <span th:text="${booking.dropoffLocation}"></span>
                                 </td>
                                 <td>
+                                    <span class="mini-signal" th:text="${booking.rideModeLabel != null ? booking.rideModeLabel : 'Smart Balance'}"></span>
+                                </td>
+                                <td>
                                     <span class="status-badge" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
                                           th:text="${booking.status.name()}"></span>
                                 </td>
@@ -133,7 +158,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${bookings.empty}">
-                                <td colspan="6" class="text-center text-muted py-4">No bookings yet.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No bookings yet.</td>
                             </tr>
                             </tbody>
                         </table>

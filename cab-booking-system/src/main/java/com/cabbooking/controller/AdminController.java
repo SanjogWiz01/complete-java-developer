@@ -43,6 +43,18 @@ public class AdminController {
                         + bookingService.countByStatus(BookingStatus.STARTED));
         model.addAttribute("completedBookings", bookingService.countByStatus(BookingStatus.COMPLETED));
         model.addAttribute("cancelledBookings", bookingService.countByStatus(BookingStatus.CANCELLED));
+        model.addAttribute("highRiskBookings", bookings.stream()
+                .filter(booking -> booking.getFraudRiskScore() != null && booking.getFraudRiskScore() >= 0.55)
+                .count());
+        model.addAttribute("averageAssurance", Math.round(bookings.stream()
+                .filter(booking -> booking.getMatchConfidenceScore() != null)
+                .mapToDouble(Booking::getMatchConfidenceScore)
+                .average()
+                .orElse(0.0) * 100));
+        model.addAttribute("ecoSavingsTotal", Math.round(bookings.stream()
+                .filter(booking -> booking.getEcoSavingsKg() != null)
+                .mapToDouble(Booking::getEcoSavingsKg)
+                .sum() * 100.0) / 100.0);
         model.addAttribute("completedRevenue", bookingService.getCompletedRevenue());
         model.addAttribute("intelligenceSnapshot", intelligenceDashboardService.snapshot());
         return "admin/dashboard";

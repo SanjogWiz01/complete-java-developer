@@ -55,6 +55,13 @@ public class Booking {
 
     private String rideType;
 
+    private String rideMode;
+
+    private String rideModeLabel;
+
+    @Column(length = 900)
+    private String rideModeReason;
+
     private LocalDateTime scheduledPickupTime;
 
     private String paymentMethod;
@@ -97,6 +104,10 @@ public class Booking {
     @Column(length = 900)
     private String rideShareSummary;
 
+    private Double matchConfidenceScore;
+
+    private Double ecoSavingsKg;
+
     @Column(nullable = true)
     private BigDecimal actualCost;
 
@@ -138,6 +149,18 @@ public class Booking {
         }
         if (offlineNavigationEnabled == null) {
             offlineNavigationEnabled = false;
+        }
+        if (rideMode == null) {
+            rideMode = "BALANCED";
+        }
+        if (rideModeLabel == null) {
+            rideModeLabel = "Smart Balance";
+        }
+        if (matchConfidenceScore == null) {
+            matchConfidenceScore = 0.0;
+        }
+        if (ecoSavingsKg == null) {
+            ecoSavingsKg = 0.0;
         }
         if (demandMultiplier == null) {
             demandMultiplier = 1.0;

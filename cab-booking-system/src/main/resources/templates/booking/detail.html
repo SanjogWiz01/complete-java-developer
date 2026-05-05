@@ -75,6 +75,7 @@
                                   data-vehicle-type=${booking.vehicleType},
                                   data-promo-code=${booking.promoCode},
                                   data-passenger-count=${booking.passengerCount},
+                                  data-ride-mode=${booking.rideMode},
                                   data-offline-enabled=${booking.offlineNavigationEnabled}"></div>
                 </section>
 
@@ -113,6 +114,18 @@
                             <strong th:text="${booking.paymentMethod != null ? booking.paymentMethod : 'CASH'}"></strong>
                         </div>
                         <div class="col-md-4">
+                            <div class="text-muted">Ride Mode</div>
+                            <strong th:text="${booking.rideModeLabel != null ? booking.rideModeLabel : 'Smart Balance'}"></strong>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted">Assurance</div>
+                            <strong><span th:text="${booking.matchConfidenceScore != null ? T(java.lang.Math).round(booking.matchConfidenceScore * 100) : 0}"></span>%</strong>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted">Eco Saving</div>
+                            <strong><span th:text="${booking.ecoSavingsKg != null ? #numbers.formatDecimal(booking.ecoSavingsKg, 1, 2) : '0.00'}"></span> kg</strong>
+                        </div>
+                        <div class="col-md-4">
                             <div class="text-muted">Demand Zone</div>
                             <strong th:text="${booking.demandZone != null ? booking.demandZone : 'STANDARD'}"></strong>
                         </div>
@@ -147,6 +160,10 @@
                         <div class="col-12" th:if="${booking.smartRouteReason != null}">
                             <div class="text-muted">AI Route Signal</div>
                             <strong th:text="${booking.smartRouteReason}"></strong>
+                        </div>
+                        <div class="col-12" th:if="${booking.rideModeReason != null}">
+                            <div class="text-muted">Mode Intelligence</div>
+                            <strong th:text="${booking.rideModeReason}"></strong>
                         </div>
                         <div class="col-12" th:if="${booking.rideShareSummary != null}">
                             <div class="text-muted">Ride Share</div>

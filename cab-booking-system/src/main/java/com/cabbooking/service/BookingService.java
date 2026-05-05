@@ -5,6 +5,7 @@ import com.cabbooking.mbb.bridge.event.CabEventBridge;
 import com.cabbooking.mbb.module.ai.AIDecisionService;
 import com.cabbooking.mbb.module.ai.DriverMatchCandidate;
 import com.cabbooking.mbb.module.ai.RideIntelligence;
+import com.cabbooking.mbb.module.ai.RideMode;
 import com.cabbooking.mbb.module.map.MapNavigationService;
 import com.cabbooking.mbb.module.map.RoutePlan;
 import com.cabbooking.repository.BookingRepository;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +43,7 @@ public class BookingService {
                                 String paymentMethod, Integer passengerCount,
                                 String promoCode, String specialInstructions) {
         return createBooking(user, pickupLocation, dropoffLocation, pickupLat, pickupLon,
-                dropoffLat, dropoffLon, vehicleType, rideType, scheduledPickupTime,
+                dropoffLat, dropoffLon, vehicleType, rideType, RideMode.BALANCED.name(), scheduledPickupTime,
                 paymentMethod, passengerCount, promoCode, specialInstructions,
                 false, false, true);
     }
@@ -51,7 +51,7 @@ public class BookingService {
     public Booking createBooking(User user, String pickupLocation, String dropoffLocation,
                                 Double pickupLat, Double pickupLon,
                                 Double dropoffLat, Double dropoffLon,
-                                String vehicleType, String rideType,
+                                String vehicleType, String rideType, String rideMode,
                                 LocalDateTime scheduledPickupTime,
                                 String paymentMethod, Integer passengerCount,
                                 String promoCode, String specialInstructions,
@@ -59,6 +59,7 @@ public class BookingService {
                                 Boolean offlineNavigationEnabled) {
         String normalizedVehicle = normalizeOption(vehicleType, "SEDAN");
         String normalizedRideType = normalizeOption(rideType, "RIDE_NOW");
+        String normalizedRideMode = RideMode.from(rideMode).name();
         String normalizedPayment = normalizeOption(paymentMethod, "CASH");
         String normalizedPromo = normalizePromoCode(promoCode);
         Integer safePassengerCount = passengerCount == null || passengerCount < 1 ? 1 : passengerCount;
@@ -69,6 +70,7 @@ public class BookingService {
                 normalizedVehicle, offlineEnabled);
         RideIntelligence intelligence = aiDecisionService.evaluateRide(
                 user, routePlan, normalizedVehicle, normalizedPromo, safePassengerCount,
+                normalizedRideMode,
                 scheduledPickupTime == null ? LocalDateTime.now() : scheduledPickupTime);
 
         Booking booking = Booking.builder()
@@ -80,10 +82,13 @@ public class BookingService {
                 .dropoffLatitude(dropoffLat)
                 .dropoffLongitude(dropoffLon)
                 .estimatedDistance(routePlan.distanceKm())
-                .estimatedDuration(routePlan.durationMinutes())
+                .estimatedDuration(intelligence.adjustedDurationMinutes())
                 .estimatedCost(intelligence.dynamicFare())
                 .vehicleType(normalizedVehicle)
                 .rideType(normalizedRideType)
+                .rideMode(intelligence.rideMode())
+                .rideModeLabel(intelligence.rideModeLabel())
+                .rideModeReason(intelligence.rideModeReason())
                 .scheduledPickupTime(scheduledPickupTime)
                 .paymentMethod(normalizedPayment)
                 .passengerCount(safePassengerCount)
@@ -102,6 +107,8 @@ public class BookingService {
                 .fraudSignals(String.join("; ", intelligence.fraudReasons()))
                 .smartRouteReason(intelligence.smartRouteReason())
                 .rideShareSummary(summarizeShareOptions(intelligence))
+                .matchConfidenceScore(intelligence.matchConfidenceScore())
+                .ecoSavingsKg(intelligence.ecoSavingsKg())
                 .status(BookingStatus.PENDING)
                 .userRating(0.0)
                 .build();
@@ -175,7 +182,7 @@ public class BookingService {
                 booking.getVehicleType(), Boolean.TRUE.equals(booking.getOfflineNavigationEnabled()));
         RideIntelligence intelligence = aiDecisionService.evaluateRide(
                 booking.getUser(), routePlan, booking.getVehicleType(), booking.getPromoCode(),
-                booking.getPassengerCount(), booking.getScheduledPickupTime());
+                booking.getPassengerCount(), booking.getRideMode(), booking.getScheduledPickupTime());
         DriverMatchCandidate candidate = intelligence.driverCandidates().stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No available drivers found"));

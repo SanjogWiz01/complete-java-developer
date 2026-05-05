@@ -41,6 +41,7 @@ public class BookingController {
             @RequestParam Double dropoffLongitude,
             @RequestParam(defaultValue = "SEDAN") String vehicleType,
             @RequestParam(defaultValue = "RIDE_NOW") String rideType,
+            @RequestParam(defaultValue = "BALANCED") String rideMode,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime scheduledPickupTime,
             @RequestParam(defaultValue = "CASH") String paymentMethod,
@@ -60,7 +61,7 @@ public class BookingController {
             Booking booking = bookingService.createBooking(
                     user, pickupLocation, dropoffLocation,
                     pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude,
-                    vehicleType, rideType, scheduledPickupTime, paymentMethod,
+                    vehicleType, rideType, rideMode, scheduledPickupTime, paymentMethod,
                     passengerCount, promoCode, specialInstructions,
                     sharedRideOptIn, voiceAssisted, offlineNavigationEnabled);
 

@@ -12,6 +12,12 @@ public class DynamicPricingService {
 
     public PricingQuote quote(RoutePlan routePlan, String vehicleType, String promoCode,
                               DemandPredictionService.DemandSignal demandSignal) {
+        return quote(routePlan, vehicleType, promoCode, demandSignal, RideMode.BALANCED);
+    }
+
+    public PricingQuote quote(RoutePlan routePlan, String vehicleType, String promoCode,
+                              DemandPredictionService.DemandSignal demandSignal, RideMode rideMode) {
+        RideMode safeMode = rideMode == null ? RideMode.BALANCED : rideMode;
         BigDecimal perKm = rateFor(vehicleType);
         BigDecimal subtotal = BigDecimal.valueOf(routePlan.distanceKm()).multiply(perKm);
         if (subtotal.compareTo(MINIMUM_FARE) < 0) {
@@ -20,8 +26,9 @@ public class DynamicPricingService {
 
         double demandMultiplier = round(1.0 + Math.min(0.85, demandSignal.score() * 0.55));
         BigDecimal surged = subtotal.multiply(BigDecimal.valueOf(demandMultiplier));
-        BigDecimal discount = promoDiscount(surged, promoCode);
-        BigDecimal total = surged.subtract(discount);
+        BigDecimal modeAdjusted = surged.multiply(safeMode.fareMultiplier());
+        BigDecimal discount = promoDiscount(modeAdjusted, promoCode);
+        BigDecimal total = modeAdjusted.subtract(discount);
         if (total.compareTo(MINIMUM_FARE) < 0) {
             total = MINIMUM_FARE;
         }
@@ -32,7 +39,8 @@ public class DynamicPricingService {
                 total.setScale(2, RoundingMode.HALF_UP),
                 demandMultiplier,
                 demandSignal.zone(),
-                demandSignal.label() + " in " + demandSignal.zone());
+                demandSignal.label() + " in " + demandSignal.zone()
+                        + "; " + safeMode.label() + " fare mode");
     }
 
     public BigDecimal promoDiscount(BigDecimal subtotal, String promoCode) {
