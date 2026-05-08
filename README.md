@@ -83,7 +83,7 @@ This repository chronicles my learning journey through the **Advanced Programmin
 
 ## 🛠️ Technologies & Tools
 
-- **Language**: Java (JDK 8+)
+- **Language**: Java (JDK 24)
 - **Build Tools**: Maven/Gradle
 - **IDEs**: IntelliJ IDEA / Eclipse / VS Code
 - **Frameworks**: 

@@ -59,7 +59,7 @@ The implementation now follows a structured **MBB (Module-Block-Bridge)** archit
 - **Database:** H2 by default, MySQL 8.0 optional
 - **Frontend:** Thymeleaf, Bootstrap 5, HTML5/CSS3
 - **Build Tool:** Maven
-- **Java Version:** 17
+- **Java Version:** 24
 
 ## 📦 Project Structure
 
@@ -112,7 +112,7 @@ cab-booking-system/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 17 or higher
+- Java 24
 - Maven 3.6+
 - Optional: MySQL Server 8.0+ for the `mysql` profile
 - Git

@@ -8,7 +8,7 @@ A playable Snake game built with JavaFX demonstrating:
 - Restart support (`R` key after game over)
 
 ## Requirements
-- JDK 17+
+- JDK 24
 - Maven 3.8+
 
 ## Run locally

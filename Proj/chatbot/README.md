@@ -2,7 +2,7 @@
 
 > An intelligent customer support chatbot built with **Java**, **Spring Boot**, and **NLP** (Natural Language Processing) to handle customer queries automatically and escalate when needed.
 
-![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
+![Java](https://img.shields.io/badge/Java-24-orange?style=flat-square&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-green?style=flat-square&logo=springboot)
 ![Apache OpenNLP](https://img.shields.io/badge/Apache_OpenNLP-2.3-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
@@ -62,7 +62,7 @@ ai-customer-support-chatbot/
 
 ### Prerequisites
 
-- Java 17+
+- Java 24
 - Maven 3.8+
 - Git
 

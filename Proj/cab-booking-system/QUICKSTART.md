@@ -4,7 +4,7 @@
 
 ### Step 1: Prerequisites Check
 ```bash
-java -version          # Should be 17+
+java -version          # Should be 24
 mvn -version           # Should be 3.6+
 mysql --version        # Should be 8.0+
 ```
