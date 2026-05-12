@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nepal Bachelor IT Education Gap</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="topbar" aria-label="Page sections">
+      <a class="brand" href="#top">Class Notes</a>
+      <div class="nav-links">
+        <a href="#gaps">Gaps</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#actions">Actions</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow">Bachelor Level IT in Nepal</p>
+        <h1>The gap between degree and real industry skill</h1>
+        <p class="hero-text">
+          Many bachelor IT students in Nepal study theory, pass exams, and still feel unprepared for actual software work.
+          The problem is not student talent. The gap is in practice, mentorship, updated curriculum, and exposure to real projects.
+        </p>
+        <div class="hero-actions" aria-label="Quick page actions">
+          <a class="primary-action" href="#roadmap">View improvement plan</a>
+          <a class="secondary-action" href="#actions">Student checklist</a>
+        </div>
+      </div>
+      <figure class="hero-visual">
+        <img src="assets/nepal-it-education-card.png" alt="Illustration of a Nepali IT classroom moving from theory to practical software work">
+        <figcaption>The missing bridge is practice with feedback.</figcaption>
+      </figure>
+    </section>
+  </header>
+
+  <main>
+    <section class="section intro-section" aria-labelledby="intro-title">
+      <div class="section-heading">
+        <p class="eyebrow">Main Point</p>
+        <h2 id="intro-title">A degree should build capability, not just exam memory</h2>
+      </div>
+      <p class="lead">
+        A strong IT program should help students write code, debug systems, read documentation, build deployable projects,
+        work in teams, communicate decisions, and understand security, data, and product thinking. When these skills are weak,
+        graduates need months of self-study before they can contribute confidently.
+      </p>
+    </section>
+
+    <section class="section" id="gaps" aria-labelledby="gaps-title">
+      <div class="section-heading">
+        <p class="eyebrow">Observed Gaps</p>
+        <h2 id="gaps-title">Where bachelor IT education often falls short</h2>
+      </div>
+
+      <div class="gap-grid">
+        <article class="gap-card">
+          <span class="card-number">01</span>
+          <h3>Outdated practical work</h3>
+          <p>Assignments can stay limited to syntax examples instead of full applications, APIs, databases, testing, and deployment.</p>
+        </article>
+        <article class="gap-card">
+          <span class="card-number">02</span>
+          <h3>Too little project review</h3>
+          <p>Students need feedback on structure, readability, debugging, version control, and how to improve a working solution.</p>
+        </article>
+        <article class="gap-card">
+          <span class="card-number">03</span>
+          <h3>Weak industry connection</h3>
+          <p>College learning becomes stronger when local companies, alumni, and mentors share current tools and work expectations.</p>
+        </article>
+        <article class="gap-card">
+          <span class="card-number">04</span>
+          <h3>Low confidence in English docs</h3>
+          <p>Modern IT work depends on documentation, error logs, GitHub issues, and technical writing. These should be practiced early.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section split-section" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="section-heading">
+        <p class="eyebrow">Roadmap</p>
+        <h2 id="roadmap-title">What a better bachelor IT path can include</h2>
+      </div>
+
+      <div class="roadmap">
+        <div class="timeline" aria-label="Improvement roadmap">
+          <div class="timeline-item">
+            <span>Semester 1-2</span>
+            <strong>Programming foundation</strong>
+            <p>Daily coding, Git basics, problem solving, documentation reading, and small console projects.</p>
+          </div>
+          <div class="timeline-item">
+            <span>Semester 3-4</span>
+            <strong>Real application building</strong>
+            <p>Web interfaces, databases, APIs, unit testing, and teamwork with code reviews.</p>
+          </div>
+          <div class="timeline-item">
+            <span>Semester 5-6</span>
+            <strong>Professional workflow</strong>
+            <p>Internship preparation, cloud deployment, security basics, agile practice, and portfolio projects.</p>
+          </div>
+          <div class="timeline-item">
+            <span>Semester 7-8</span>
+            <strong>Industry-ready output</strong>
+            <p>Capstone products, open-source contribution, interview practice, and public project demos.</p>
+          </div>
+        </div>
+
+        <aside class="focus-panel" aria-labelledby="focus-title">
+          <h3 id="focus-title">The simple rule</h3>
+          <p>Every semester should produce one visible project that a student can explain, improve, and show.</p>
+          <button class="toggle-button" type="button" data-toggle-target="focus-details">Read focus details</button>
+          <p class="hidden-detail" id="focus-details">
+            A portfolio is stronger than a marksheet when it proves actual ability. Students should leave college with GitHub projects,
+            clean READMEs, deployed demos, and the habit of learning new tools independently.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="actions" aria-labelledby="actions-title">
+      <div class="section-heading">
+        <p class="eyebrow">Student Action</p>
+        <h2 id="actions-title">A practical checklist for IT students</h2>
+      </div>
+
+      <div class="checklist-layout">
+        <form class="checklist" aria-describedby="progress-text">
+          <label><input type="checkbox" data-progress-item> Push code to GitHub every week</label>
+          <label><input type="checkbox" data-progress-item> Build one complete mini project per month</label>
+          <label><input type="checkbox" data-progress-item> Read official documentation before random tutorials</label>
+          <label><input type="checkbox" data-progress-item> Practice explaining code in simple words</label>
+          <label><input type="checkbox" data-progress-item> Learn testing, deployment, and debugging basics</label>
+        </form>
+
+        <div class="progress-panel">
+          <span class="progress-label">Progress</span>
+          <div class="progress-track" aria-hidden="true">
+            <span class="progress-fill" data-progress-fill></span>
+          </div>
+          <p id="progress-text" data-progress-text>0 of 5 actions selected.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Class note topic: Improving bachelor level IT education in Nepal.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
