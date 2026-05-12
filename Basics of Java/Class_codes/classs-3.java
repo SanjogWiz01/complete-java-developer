@@ -20,4 +20,4 @@ class HelloButtonSwing {
             frame.setVisible(true);
         });
     }
-}
+} // chnage the text of button when we click on it.
