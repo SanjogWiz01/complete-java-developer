@@ -1,1 +1,24 @@
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
 
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+
+.vscode/
+.DS_Store
+Thumbs.db
+
+*.log
+*.tmp
+*.bak
+
+*.h2.db
+*.mv.db
