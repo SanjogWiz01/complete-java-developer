@@ -12,3 +12,9 @@ This class notes webpage discusses the lack of practical, industry-ready bachelo
 ## Run
 
 Open `index.html` in a browser, or serve this folder with a local static server.
+
+## Discussion Questions
+
+- What practical skill is missing most in your current IT classes?
+- Which project would best prove that a bachelor student is industry ready?
+- How can colleges connect students with mentors, alumni, and local companies earlier?
