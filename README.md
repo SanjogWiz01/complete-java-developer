@@ -1,9 +1,10 @@
 <div align="center">
-  <h1>🚀 Complete Java Developer Journey</h1>
+  <h1>🚀 Complete Java Developer</h1>
   <p>
-    <strong>Advanced Java Programming</strong> | OOP • GUI • Spring Boot • Enterprise Applications<br>
-    <em>Based on Pokhara University BE Computer Engineering Syllabus</em>
+    <strong>Advanced Java Programming Journey</strong><br>
+    From Core Java to Enterprise Applications with Spring Boot
   </p>
+  <p><em>Pokhara University - BE Computer Engineering</em></p>
 
   <a href="https://github.com/SanjogWiz01">
     <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
@@ -17,19 +18,19 @@
 
 ### 📖 About This Repository
 
-This repository documents my **complete journey** in Advanced Java Programming — from core fundamentals to building real enterprise-level applications using modern Java technologies.
+This repository contains my complete learning journey of **Advanced Java Programming**. It covers everything from fundamental concepts to building real-world enterprise applications.
 
-It serves as both my **personal learning archive** and a comprehensive resource for fellow students and developers.
+Built while following Pokhara University syllabus with extra focus on practical implementation and clean code.
 
-### 🎯 What You'll Find Here
+### 🎯 Key Highlights
 
-- Solid **OOP Foundations** with practical examples
-- Desktop Applications using **Swing & JavaFX**
-- Networking & Distributed Systems (Socket, RMI)
-- Database Integration with **JDBC**
-- Web Development using **Servlets, JSP & Tomcat**
-- Modern Enterprise Development with **Spring Boot + Hibernate**
-- Concurrency, Design Patterns & Best Practices
+- Strong understanding of **OOP** principles with practical examples
+- Desktop GUI applications using Swing & JavaFX
+- Socket Programming & Networking
+- JDBC Database Connectivity
+- Web Development using Servlets & JSP
+- Modern Backend with **Spring Boot** + Hibernate
+- Multithreading, Design Patterns & Best Practices
 
 ---
 
@@ -39,18 +40,46 @@ It serves as both my **personal learning archive** and a comprehensive resource 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=flat&logo=openjdk&logoColor=white) 
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat&logo=apache-maven&logoColor=white)
 
-**Frontend / GUI**  
-Swing • JavaFX • AWT
+**GUI**  
+Swing • JavaFX
 
-**Backend & Frameworks**  
+**Backend**  
 Spring Boot • Hibernate • Servlets • JSP
 
 **Database**  
-MySQL • PostgreSQL • JDBC
+MySQL • JDBC
 
 **Tools**  
-IntelliJ IDEA • Git • Postman • Apache Tomcat
+IntelliJ IDEA • Git • Apache Tomcat • Postman
 
 ---
 
-### 📂 Repository Structure
+### 📂 Main Folders
+
+- `Basics of Java/` → Core Java
+- `Object-Oriented Principles/` → OOP Concepts
+- `Building GUI Components/` → Swing & JavaFX Projects
+- `Proj/` → Major Projects
+- More folders coming as I progress (Networking, JDBC, Spring Boot, etc.)
+
+---
+
+### 🔥 Notable Projects
+
+- Interactive GUI Desktop Applications
+- Real-time Chat Application (Socket Programming)
+- CRUD Operations with JDBC
+- Dynamic Web Apps using Servlets + JSP
+- Spring Boot REST APIs (In Progress)
+
+---
+
+### 📝 How to Run
+
+```bash
+git clone https://github.com/SanjogWiz01/complete-java-developer.git
+cd complete-java-developer
+
+# Compile and run normal Java file
+javac Filename.java
+java Filename
