@@ -1,5 +1,5 @@
 class test {
     public static void main(String[] args) {
-        System.out.println("GitHub contribution test");
+        System.out.println("GitHub contribution test");  // java comments
     }
 }
