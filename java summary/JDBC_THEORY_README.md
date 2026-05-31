@@ -9,7 +9,7 @@ JDBC has four common layers:
 1. Java application code.
 2. JDBC API from the JDK, mainly the `java.sql` package.
 3. Database-specific JDBC driver.
-4. The database server or database file.
+4. The database server or database file.  
 
 Your Java code calls standard JDBC interfaces. The driver translates those calls
 into the database's own protocol.
