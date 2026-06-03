@@ -17,7 +17,7 @@ def booth_multiplication(m, r, n):
     # Mask for 2n+1 bits
     mask = (1 << (2 * n + 1)) - 1
 
-    print(f"Initial P: {P:0{2*n+1}b}")
+    print(f"Initial P: {P:0{2*n+1}b}") # git ingore
 
     for i in range(n):
         if P & 1 == 1 and (P >> 1) & 1 == 0:  # 01 → add A
