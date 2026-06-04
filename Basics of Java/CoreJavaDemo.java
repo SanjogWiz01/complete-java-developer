@@ -128,7 +128,7 @@ public class CoreJavaDemo {
 }
 
 class Student {
-    private final String name;
+    private final String name; // data abstractions
     private final int age;
     private Course course;
 
