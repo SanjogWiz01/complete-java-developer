@@ -57,6 +57,7 @@ IntelliJ IDEA • Git • Apache Tomcat • Postman
 ### 📂 Main Folders
 
 - `Basics of Java/` → Core Java
+- `HTML Development Full Course/` -> HTML course notes, examples, and projects
 - `Object-Oriented Principles/` → OOP Concepts
 - `Building GUI Components/` → Swing & JavaFX Projects
 - `Proj/` → Major Projects
