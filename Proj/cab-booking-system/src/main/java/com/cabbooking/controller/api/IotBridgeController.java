@@ -6,7 +6,11 @@ import com.cabbooking.mbb.module.iot.VehicleTelemetryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @RestController
 @RequestMapping("/api/iot")
@@ -15,7 +19,7 @@ public class IotBridgeController {
     private final String expectedToken;
 
     public IotBridgeController(VehicleTelemetryService telemetryService,
-                               @Value("${cab.mbb.iot.token:dev-iot-token}") String expectedToken) {
+                               @Value("${cab.mbb.iot.token:}") String expectedToken) {
         this.telemetryService = telemetryService;
         this.expectedToken = expectedToken;
     }
@@ -24,11 +28,20 @@ public class IotBridgeController {
     public ResponseEntity<VehicleTelemetryResponse> receiveTelemetry(
             @RequestHeader(name = "X-IOT-TOKEN", required = false) String token,
             @RequestBody VehicleTelemetryRequest request) {
-        if (!expectedToken.equals(token)) {
+        if (!hasValidToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new VehicleTelemetryResponse(null, request.driverId(), "UNKNOWN", 0,
                             false, "Invalid IoT bridge token"));
         }
         return ResponseEntity.ok(telemetryService.record(request));
+    }
+
+    private boolean hasValidToken(String token) {
+        if (!StringUtils.hasText(expectedToken) || token == null) {
+            return false;
+        }
+        byte[] expectedBytes = expectedToken.getBytes(StandardCharsets.UTF_8);
+        byte[] providedBytes = token.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(expectedBytes, providedBytes);
     }
 }

@@ -7,26 +7,38 @@ import com.cabbooking.entity.UserRole;
 import com.cabbooking.repository.DriverRepository;
 import com.cabbooking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
-    private static final String ADMIN_EMAIL = "admin@example.com";
-    private static final String ADMIN_PASSWORD = "admin123";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final DriverRepository driverRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${cab.admin.email:admin@example.com}")
+    private String adminEmail;
+
+    @Value("${cab.admin.password:}")
+    private String adminPassword;
+
+    @Value("${cab.seed.driver.password:}")
+    private String seedDriverPassword;
+
     @Override
     public void run(String... args) {
-        if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
+        if (StringUtils.hasText(adminPassword) && !userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
-                    .email(ADMIN_EMAIL)
-                    .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
                     .fullName("System Administrator")
                     .phoneNumber("0000000000")
                     .role(UserRole.ADMIN)
@@ -34,6 +46,13 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             userRepository.save(admin);
+        } else if (!StringUtils.hasText(adminPassword)) {
+            LOGGER.info("Skipping admin seed account because cab.admin.password is not configured.");
+        }
+
+        if (!StringUtils.hasText(seedDriverPassword)) {
+            LOGGER.info("Skipping driver seed accounts because cab.seed.driver.password is not configured.");
+            return;
         }
 
         seedDriver("maya.driver@example.com", "Maya Singh", "9800000001",
@@ -57,7 +76,7 @@ public class DataInitializer implements CommandLineRunner {
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> userRepository.save(User.builder()
                         .email(email)
-                        .password(passwordEncoder.encode("driver123"))
+                        .password(passwordEncoder.encode(seedDriverPassword))
                         .fullName(fullName)
                         .phoneNumber(phoneNumber)
                         .role(UserRole.DRIVER)

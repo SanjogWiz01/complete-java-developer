@@ -3,6 +3,7 @@ package com.cabbooking.service;
 import com.cabbooking.entity.Driver;
 import com.cabbooking.entity.DriverStatus;
 import com.cabbooking.entity.User;
+import com.cabbooking.exception.ResourceNotFoundException;
 import com.cabbooking.mbb.bridge.event.CabEventBridge;
 import com.cabbooking.mbb.module.map.Coordinate;
 import com.cabbooking.mbb.module.map.MapNavigationService;
@@ -38,7 +39,7 @@ public class DriverService {
 
     public Driver getDriverById(Long id) {
         return driverRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Driver not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + id));
     }
 
     public List<Driver> getAvailableDrivers() {

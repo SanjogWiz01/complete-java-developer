@@ -59,7 +59,7 @@ The implementation now follows a structured **MBB (Module-Block-Bridge)** archit
 - **Database:** H2 by default, MySQL 8.0 optional
 - **Frontend:** Thymeleaf, Bootstrap 5, HTML5/CSS3
 - **Build Tool:** Maven
-- **Java Version:** 24
+- **Java Version:** 21+
 
 ## 📦 Project Structure
 
@@ -112,7 +112,7 @@ cab-booking-system/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 24
+- Java 21 or newer
 - Maven 3.6+
 - Optional: MySQL Server 8.0+ for the `mysql` profile
 - Git
@@ -154,15 +154,19 @@ The default configuration uses an in-memory H2 database so the app runs immediat
    mvn spring-boot:run -Dspring-boot.run.profiles=mysql
    ```
 
-## 👤 Default Credentials
+## 👤 Account Setup
 
 ### User Registration
 - Register a new user through `/auth/register`
 
 ### Admin Access
-- Email: `admin@example.com`
-- Password: `admin123`
-- (Add this user manually or create registration endpoint for admin)
+- No admin password is committed to the repository.
+- Before first run, set `CAB_ADMIN_PASSWORD` to seed the admin account.
+- Optional: set `CAB_ADMIN_EMAIL`; otherwise the seeded admin email is `admin@example.com`.
+
+### Local Seed Data
+- Set `CAB_SEED_DRIVER_PASSWORD` before startup if you want the sample driver accounts to be created.
+- Set `CAB_MBB_IOT_TOKEN` before using `POST /api/iot/telemetry`.
 
 ## 📖 Usage Guide
 

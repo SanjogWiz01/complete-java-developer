@@ -1,6 +1,7 @@
 package com.cabbooking.controller;
 
 import com.cabbooking.entity.User;
+import com.cabbooking.exception.CabBookingException;
 import com.cabbooking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -37,7 +38,7 @@ public class AuthController {
         try {
             User user = userService.registerUser(email, password, fullName, phoneNumber, address);
             return "redirect:/auth/login?success";
-        } catch (RuntimeException e) {
+        } catch (CabBookingException e) {
             model.addAttribute("error", e.getMessage());
             return "auth/register";
         }

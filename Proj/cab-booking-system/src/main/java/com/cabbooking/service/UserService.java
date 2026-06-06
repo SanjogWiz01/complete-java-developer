@@ -2,6 +2,8 @@ package com.cabbooking.service;
 
 import com.cabbooking.entity.User;
 import com.cabbooking.entity.UserRole;
+import com.cabbooking.exception.DuplicateResourceException;
+import com.cabbooking.exception.ResourceNotFoundException;
 import com.cabbooking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +20,7 @@ public class UserService {
     public User registerUser(String email, String password, String fullName,
                            String phoneNumber, String address) {
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
 
         User user = User.builder()
@@ -39,7 +41,7 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     public List<User> getAllUsers() {

@@ -60,7 +60,7 @@ Blocks:
 - `DriverBehaviorMonitor` scores speed, braking, acceleration, fuel, and engine heat.
 - `DriverTelemetry` stores GPS, fuel, engine, and behavior data.
 
-Use header `X-IOT-TOKEN: dev-iot-token` for local testing. Change `cab.mbb.iot.token` before deployment.
+Set `CAB_MBB_IOT_TOKEN` before local testing, then send the same value in the `X-IOT-TOKEN` header. The repository does not include a default bridge token.
 
 ### Safety Module
 Package: `com.cabbooking.mbb.module.safety`

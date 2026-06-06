@@ -4,7 +4,7 @@
 
 ### Step 1: Prerequisites Check
 ```bash
-java -version          # Should be 24
+java -version          # Should be 21 or newer
 mvn -version           # Should be 3.6+
 mysql --version        # Should be 8.0+
 ```
@@ -12,17 +12,19 @@ mysql --version        # Should be 8.0+
 ### Step 2: Create Database
 ```sql
 CREATE DATABASE cab_booking_db;
-CREATE USER 'cab_user'@'localhost' IDENTIFIED BY 'cab_password';
+CREATE USER 'cab_user'@'localhost' IDENTIFIED BY '<choose-strong-password>';
 GRANT ALL PRIVILEGES ON cab_booking_db.* TO 'cab_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### Step 3: Update Configuration
-Edit `src/main/resources/application.properties`:
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cab_booking_db
-spring.datasource.username=cab_user
-spring.datasource.password=cab_password
+### Step 3: Set Local Secrets
+Set the database and seed account values in your shell before running the app:
+```powershell
+$env:CAB_DB_USERNAME="cab_user"
+$env:CAB_DB_PASSWORD="<choose-strong-password>"
+$env:CAB_ADMIN_PASSWORD="<choose-admin-password>"
+$env:CAB_SEED_DRIVER_PASSWORD="<choose-driver-password>"
+$env:CAB_MBB_IOT_TOKEN="<choose-iot-token>"
 ```
 
 ### Step 4: Run Application

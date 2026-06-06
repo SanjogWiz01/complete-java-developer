@@ -1,6 +1,9 @@
 package com.cabbooking.service;
 
 import com.cabbooking.entity.*;
+import com.cabbooking.exception.InvalidBookingStateException;
+import com.cabbooking.exception.NoAvailableDriverException;
+import com.cabbooking.exception.ResourceNotFoundException;
 import com.cabbooking.mbb.bridge.event.CabEventBridge;
 import com.cabbooking.mbb.module.ai.AIDecisionService;
 import com.cabbooking.mbb.module.ai.DriverMatchCandidate;
@@ -120,7 +123,7 @@ public class BookingService {
 
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
     }
 
     public List<Booking> getUserBookings(User user) {
@@ -160,7 +163,7 @@ public class BookingService {
     public Booking acceptBooking(Long bookingId, Driver driver) {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new RuntimeException("Booking is not in PENDING status");
+            throw new InvalidBookingStateException("Booking is not in PENDING status");
         }
         booking.setDriver(driver);
         booking.setStatus(BookingStatus.ACCEPTED);
@@ -172,7 +175,7 @@ public class BookingService {
     public Booking autoAssignDriver(Long bookingId) {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new RuntimeException("Only pending bookings can be auto-assigned");
+            throw new InvalidBookingStateException("Only pending bookings can be auto-assigned");
         }
 
         RoutePlan routePlan = mapNavigationService.planRoute(
@@ -185,9 +188,9 @@ public class BookingService {
                 booking.getPassengerCount(), booking.getRideMode(), booking.getScheduledPickupTime());
         DriverMatchCandidate candidate = intelligence.driverCandidates().stream()
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No available drivers found"));
+                .orElseThrow(() -> new NoAvailableDriverException("No available drivers found"));
         Driver driver = driverRepository.findById(candidate.driverId())
-                .orElseThrow(() -> new RuntimeException("Matched driver no longer exists"));
+                .orElseThrow(() -> new ResourceNotFoundException("Matched driver no longer exists"));
 
         return acceptBooking(bookingId, driver);
     }
@@ -195,7 +198,7 @@ public class BookingService {
     public Booking startRide(Long bookingId) {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() != BookingStatus.ACCEPTED) {
-            throw new RuntimeException("Booking must be ACCEPTED to start");
+            throw new InvalidBookingStateException("Booking must be ACCEPTED to start");
         }
         booking.setStatus(BookingStatus.STARTED);
         booking.setPickupTime(java.time.LocalDateTime.now());
@@ -209,7 +212,7 @@ public class BookingService {
     public Booking completeBooking(Long bookingId) {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() != BookingStatus.STARTED) {
-            throw new RuntimeException("Booking must be STARTED to complete");
+            throw new InvalidBookingStateException("Booking must be STARTED to complete");
         }
         booking.setStatus(BookingStatus.COMPLETED);
         booking.setDropoffTime(java.time.LocalDateTime.now());
@@ -231,7 +234,7 @@ public class BookingService {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() == BookingStatus.COMPLETED ||
             booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new RuntimeException("Cannot cancel completed or already cancelled booking");
+            throw new InvalidBookingStateException("Cannot cancel completed or already cancelled booking");
         }
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancellationReason(reason);
@@ -245,7 +248,7 @@ public class BookingService {
     public Booking rateBooking(Long bookingId, Double rating, String review) {
         Booking booking = getBookingById(bookingId);
         if (booking.getStatus() != BookingStatus.COMPLETED) {
-            throw new RuntimeException("Can only rate completed bookings");
+            throw new InvalidBookingStateException("Can only rate completed bookings");
         }
         booking.setUserRating(rating);
         booking.setUserReview(review);

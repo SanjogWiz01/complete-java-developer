@@ -2,6 +2,7 @@ package com.cabbooking.controller;
 
 import com.cabbooking.entity.Booking;
 import com.cabbooking.entity.User;
+import com.cabbooking.exception.ResourceNotFoundException;
 import com.cabbooking.mbb.module.ai.SmartRouteSuggestionService;
 import com.cabbooking.service.BookingService;
 import com.cabbooking.service.UserService;
@@ -56,7 +57,7 @@ public class BookingController {
             Model model) {
         try {
             User user = userService.findByEmail(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
             Booking booking = bookingService.createBooking(
                     user, pickupLocation, dropoffLocation,
@@ -92,7 +93,7 @@ public class BookingController {
     @GetMapping("/my-bookings")
     public String myBookings(Authentication authentication, Model model) {
         User user = userService.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         List<Booking> bookings = bookingService.getUserBookings(user);
         model.addAttribute("bookings", bookings);
         return "booking/my-bookings";
