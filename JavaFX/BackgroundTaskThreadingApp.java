@@ -24,7 +24,7 @@ public class BackgroundTaskThreadingApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        Label status = new Label("Ready to run a background task.");
+        Label status = new Label("Ready to run a background report.");
         ProgressBar progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(360);
 
@@ -115,6 +115,7 @@ public class BackgroundTaskThreadingApp extends Application {
     }
 
     @Override
+    // Shut down the worker thread when the JavaFX window closes.
     public void stop() {
         worker.shutdownNow();
     }
