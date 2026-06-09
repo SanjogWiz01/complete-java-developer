@@ -39,7 +39,7 @@ public class EventHandlingFormApp extends Application {
         CheckBox jdbc = new CheckBox("JDBC");
         CheckBox networking = new CheckBox("Networking");
 
-        Label message = new Label("Fill the form and click Save.");
+        Label message = new Label("Fill the form, then save one student record.");
         ListView<String> savedList = new ListView<>();
         savedList.setPrefHeight(150);
 
