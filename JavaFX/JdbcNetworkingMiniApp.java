@@ -100,7 +100,7 @@ public class JdbcNetworkingMiniApp extends Application {
 
         HBox buttons = new HBox(10, saveButton, findButton, listButton, deleteButton);
 
-        Label note = new Label("The app uses memory storage now. Swap MemoryStudentDao with JdbcStudentDao when a database connection is ready.");
+        Label note = new Label("The app uses memory storage now, but the DAO shape is ready for real JDBC.");
         note.setWrapText(true);
 
         VBox root = new VBox(12, note, form, buttons, output);
