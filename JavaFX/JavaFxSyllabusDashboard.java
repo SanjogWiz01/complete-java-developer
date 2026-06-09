@@ -44,7 +44,7 @@ public class JavaFxSyllabusDashboard extends Application {
         ListView<Topic> topicList = new ListView<>(topics);
         topicList.setPrefWidth(260);
 
-        Label title = new Label("Advanced Java Syllabus");
+        Label title = new Label("Advanced Java Syllabus Map");
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
 
         Label selectedTitle = new Label();
