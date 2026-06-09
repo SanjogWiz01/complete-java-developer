@@ -75,7 +75,7 @@ public class TableViewCollectionsApp extends Application {
         sortedStudents.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedStudents);
 
-        Label message = new Label("ObservableList updates the TableView when rows change.");
+        Label message = new Label("Search, add, and remove rows without rebuilding the screen.");
 
         Button addButton = new Button("Add");
         addButton.setOnAction(event -> {
