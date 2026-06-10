@@ -66,7 +66,7 @@ public class BackgroundTaskThreadingApp extends Application {
             startButton.setDisable(true);
             cancelButton.setDisable(false);
             logArea.clear();
-            worker.submit(runningTask);
+            worker.submit(runningTask); // comments 
         });
 
         cancelButton.setOnAction(event -> {
