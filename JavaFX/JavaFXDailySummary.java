@@ -52,7 +52,11 @@ public class JavaFXDailySummary {
                 section(
                         "TableView",
                         "TableView displays structured rows and columns for collections of objects.",
-                        "ObservableList and cell value factories are commonly used to keep table data visible and current.")
+                        "ObservableList and cell value factories are commonly used to keep table data visible and current."),
+                section(
+                        "Packaging",
+                        "A finished JavaFX application needs its runtime modules and resources packaged correctly.",
+                        "Tools such as Maven, Gradle, jlink, and jpackage can help produce runnable builds.")
         );
     }
 
