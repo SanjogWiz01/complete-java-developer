@@ -12,7 +12,11 @@ public class JavaFXDailySummary {
                 section(
                         "Application",
                         "A JavaFX program usually starts from a class that extends Application.",
-                        "The start method receives the primary Stage and builds the first scene.")
+                        "The start method receives the primary Stage and builds the first scene."),
+                section(
+                        "Stage",
+                        "A Stage is the top-level window shown by a JavaFX application.",
+                        "The primary Stage is provided by the runtime, and extra windows can be created when needed.")
         );
     }
 
