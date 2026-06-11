@@ -16,7 +16,11 @@ public class JavaFXDailySummary {
                 section(
                         "Stage",
                         "A Stage is the top-level window shown by a JavaFX application.",
-                        "The primary Stage is provided by the runtime, and extra windows can be created when needed.")
+                        "The primary Stage is provided by the runtime, and extra windows can be created when needed."),
+                section(
+                        "Scene",
+                        "A Scene holds the visual content inside a Stage.",
+                        "Switching scenes is a common way to move between screens such as login, dashboard, and settings.")
         );
     }
 
