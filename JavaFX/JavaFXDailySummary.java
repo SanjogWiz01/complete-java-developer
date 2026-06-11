@@ -20,7 +20,11 @@ public class JavaFXDailySummary {
                 section(
                         "Scene",
                         "A Scene holds the visual content inside a Stage.",
-                        "Switching scenes is a common way to move between screens such as login, dashboard, and settings.")
+                        "Switching scenes is a common way to move between screens such as login, dashboard, and settings."),
+                section(
+                        "Layout Panes",
+                        "Layout panes arrange child nodes without manual pixel positioning.",
+                        "VBox, HBox, BorderPane, GridPane, and StackPane solve different layout problems.")
         );
     }
 
