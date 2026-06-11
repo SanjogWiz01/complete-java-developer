@@ -24,7 +24,11 @@ public class JavaFXDailySummary {
                 section(
                         "Layout Panes",
                         "Layout panes arrange child nodes without manual pixel positioning.",
-                        "VBox, HBox, BorderPane, GridPane, and StackPane solve different layout problems.")
+                        "VBox, HBox, BorderPane, GridPane, and StackPane solve different layout problems."),
+                section(
+                        "Controls",
+                        "Controls are ready-made UI components for user interaction.",
+                        "Button, Label, TextField, CheckBox, ComboBox, TableView, and ListView are common examples.")
         );
     }
 
