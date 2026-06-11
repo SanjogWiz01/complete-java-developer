@@ -48,7 +48,11 @@ public class JavaFXDailySummary {
                 section(
                         "Concurrency",
                         "Long-running work should not run on the JavaFX Application Thread.",
-                        "Task, Service, and Platform.runLater help keep the interface responsive.")
+                        "Task, Service, and Platform.runLater help keep the interface responsive."),
+                section(
+                        "TableView",
+                        "TableView displays structured rows and columns for collections of objects.",
+                        "ObservableList and cell value factories are commonly used to keep table data visible and current.")
         );
     }
 
