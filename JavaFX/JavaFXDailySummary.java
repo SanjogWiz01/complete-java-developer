@@ -44,7 +44,11 @@ public class JavaFXDailySummary {
                 section(
                         "FXML",
                         "FXML describes a JavaFX user interface in an XML-based file.",
-                        "Controller classes connect FXML views to event handlers and application behavior.")
+                        "Controller classes connect FXML views to event handlers and application behavior."),
+                section(
+                        "Concurrency",
+                        "Long-running work should not run on the JavaFX Application Thread.",
+                        "Task, Service, and Platform.runLater help keep the interface responsive.")
         );
     }
 
