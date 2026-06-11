@@ -32,7 +32,11 @@ public class JavaFXDailySummary {
                 section(
                         "Event Handling",
                         "Events describe user actions such as clicking, typing, selecting, and dragging.",
-                        "Handlers are attached to controls so the application can respond to those actions.")
+                        "Handlers are attached to controls so the application can respond to those actions."),
+                section(
+                        "Properties and Binding",
+                        "JavaFX properties wrap values and support change observation.",
+                        "Binding keeps one value automatically synchronized with another value or expression.")
         );
     }
 
