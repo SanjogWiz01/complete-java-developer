@@ -28,7 +28,11 @@ public class JavaFXDailySummary {
                 section(
                         "Controls",
                         "Controls are ready-made UI components for user interaction.",
-                        "Button, Label, TextField, CheckBox, ComboBox, TableView, and ListView are common examples.")
+                        "Button, Label, TextField, CheckBox, ComboBox, TableView, and ListView are common examples."),
+                section(
+                        "Event Handling",
+                        "Events describe user actions such as clicking, typing, selecting, and dragging.",
+                        "Handlers are attached to controls so the application can respond to those actions.")
         );
     }
 
