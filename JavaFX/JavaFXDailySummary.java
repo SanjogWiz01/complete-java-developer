@@ -40,7 +40,11 @@ public class JavaFXDailySummary {
                 section(
                         "CSS Styling",
                         "JavaFX supports CSS so visual styling can be separated from application logic.",
-                        "Style classes and external stylesheets keep screens easier to maintain.")
+                        "Style classes and external stylesheets keep screens easier to maintain."),
+                section(
+                        "FXML",
+                        "FXML describes a JavaFX user interface in an XML-based file.",
+                        "Controller classes connect FXML views to event handlers and application behavior.")
         );
     }
 
