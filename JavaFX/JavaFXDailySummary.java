@@ -36,7 +36,11 @@ public class JavaFXDailySummary {
                 section(
                         "Properties and Binding",
                         "JavaFX properties wrap values and support change observation.",
-                        "Binding keeps one value automatically synchronized with another value or expression.")
+                        "Binding keeps one value automatically synchronized with another value or expression."),
+                section(
+                        "CSS Styling",
+                        "JavaFX supports CSS so visual styling can be separated from application logic.",
+                        "Style classes and external stylesheets keep screens easier to maintain.")
         );
     }
 
