@@ -34,6 +34,3 @@ public class JavaFXLayouts {
     }
 }
             frame.setVisible(true);
-        });
-    }
-}
