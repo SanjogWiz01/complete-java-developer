@@ -1,0 +1,6 @@
+public .button {
+    -fx-background-color: blue;
+    -fx-text-fill: white;
+} {
+    
+}
