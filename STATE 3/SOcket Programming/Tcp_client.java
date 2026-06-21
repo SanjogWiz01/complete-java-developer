@@ -7,7 +7,7 @@ public class Tcp_client {
         System.out.println("Connected to server");
         
         // Send message to server
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // auto-flush
         out.println("Hello from client!");
         
         // Read response from server
