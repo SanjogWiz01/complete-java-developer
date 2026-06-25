@@ -5,19 +5,19 @@ import java.sql.Statement;
 
 public class basic_connecion   {
     public static void main(String[] args) throws Exception {
-        String url = "jdbc:mysql://localhost:3306/database_name"; // Database details
+        String url = "jdbc:mysql://localhost:3306/database_name"; 
         String username = "rootgfg"; // MySQL credentials
         String password = "gfg123";
         String query = "select * from students"; // Query to be run
 
-        // Load and register the driver
+      // load 
         Class.forName("com.mysql.cj.jdbc.Driver");
 
         // Establish connection
         Connection con = DriverManager.getConnection(url, username, password);
         System.out.println("Connection Established successfully");
 
-        // Create a statement
+       
         Statement st = con.createStatement();
 
         // Execute the query
