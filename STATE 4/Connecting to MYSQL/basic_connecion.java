@@ -26,7 +26,9 @@ public class basic_connecion   {
         // Process the results
         while (rs.next()) {
             String name = rs.getString("name"); // Retrieve name from db
-            System.out.println(name); // Print result on console
+            System.out.println(name); 
+
+            // commection 
         }
 
         // Close the statement and connection
