@@ -1,0 +1,33 @@
+
+Introduction to Java Servlets
+Work on the server-side to manage request-response lifecycle.
+Capable of handling multiple client requests efficiently.
+Suitable for building robust and scalable enterprise applications.
+Servlets Architecture
+Jsp-servlet-architecture
+Servlet Architecture
+Servlet Architecture Workflow
+The Clients send the request to the Web Server.
+The Web Server receives the request.
+The Web Server passes the request to the corresponding servlet.
+The Servlet processes the request and generates the response in the form of output.
+The Servlet sends the response back to the webserver.
+The Web Server sends the response back to the client and the client browser displays it on the screen.
+Need of Server-Side Extensions
+Server-side extensions allow dynamic web page generation by running programs on the server.
+Web servers provide APIs to help developers build these applications.
+Java Servlets (part of Jakarta EE) are a key API for Java-based web development.
+Servlet Container
+Services provided by the Servlet container: 
+Network Services: Loads a Servlet class. The loading may be from a local file system, a remote file system or other network services. The Servlet container provides the network services over which the request and response are sent.
+Decode and Encode MIME-based messages: Provides the service of decoding and encoding MIME-based messages.
+Manage Servlet container: Manages the lifecycle of a Servlet.
+Resource management: Manages the static and dynamic resources, such as HTML files, Servlets and JSP pages.
+Security Service: Handles authorization and authentication of resource access.
+Session Management: Maintains a session by appending a session ID to the URL path
+Steps to implementation of creating a basic servlet program
+Prerequisites
+Install JDK (Java Development Kit)
+Install Apache Tomcat server (e.g., version 9 or 10)
+Install an IDE like Eclipse or IntelliJ IDEA 
+Download the Servlet API JAR (already included in Tomcat)
