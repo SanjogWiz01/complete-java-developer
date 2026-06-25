@@ -1,0 +1,23 @@
+JDBC (Java Database Connectivity)
+JDBC Architecture
+JDBC-Architecture
+JDBC Architecture
+Components of JDBC
+Interfaces like Driver, ResultSet, RowSet, PreparedStatement and Connection that helps managing different database tasks.
+Classes like DriverManager, Types, Blob and Clob that helps managing database connections.
+JDBC Processing Models
+1. Two-Tier Architecture
+2. Three-Tier Architecture
+JDBC Drivers
+Type-1 driver or JDBC-ODBC bridge driver
+Type-2 driver or Native-API driver (partially java driver)
+Type-3 driver or Network Protocol driver (fully java driver)
+Type-4 driver or Thin driver (fully java driver) - It is a widely used driver. The older drivers like (JDBC-ODBC) bridge driver have been deprecated and no longer supported in modern versions of Java.
+JDBC Classes and Interfaces
+DriverManager	Manages JDBC drivers and establishes database connections.
+Connection	Represents a session with a specific database.
+Statement	Used to execute static SQL queries.
+PreparedStatement	Precompiled SQL statement, used for dynamic queries with parameters.
+CallableStatement	Used to execute stored procedures in the database.
+ResultSet	Represents the result set of a query, allowing navigation through the rows.
+SQLException	Handles SQL-related exceptions during database operations.
