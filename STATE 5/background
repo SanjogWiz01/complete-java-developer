@@ -1,5 +1,6 @@
-
 Introduction to Java Servlets
+ 
+ 
 Work on the server-side to manage request-response lifecycle.
 Capable of handling multiple client requests efficiently.
 Suitable for building robust and scalable enterprise applications.
