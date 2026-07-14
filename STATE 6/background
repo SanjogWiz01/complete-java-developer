@@ -1,0 +1,36 @@
+Introduction to APIs in Java
+ 
+
+An API (Application Programming Interface) allows different software systems to communicate with each other.
+In Java, APIs are used to connect to external services, exchange data, and build integrations.
+
+Key Concepts
+REST APIs use HTTP methods (GET, POST, PUT, DELETE) to perform operations.
+JSON is the most common data format for API communication.
+HTTPURLConnection is the built-in Java class for making API calls.
+Libraries like Gson, Jackson, and OkHttp simplify API work.
+
+API Communication Flow
+Client (Java application) -> HTTP Request -> API Server -> HTTP Response -> Client
+
+Types of API Interactions
+Consuming APIs: Reading data from external services.
+Providing APIs: Building servers that expose endpoints for clients.
+
+Common Use Cases
+Fetching weather data from a public API.
+Sending data to a payment gateway.
+Connecting to a database through a REST service.
+Building microservices that talk to each other.
+Authenticating users via token-based systems.
+
+Java API Libraries
+java.net.HttpURLConnection - Built-in, no external dependencies.
+OkHttp - Modern, efficient HTTP client.
+Apache HttpClient - Feature-rich, widely used.
+Gson / Jackson - JSON parsing and serialization.
+Spring Web - Full framework for building REST APIs.
+
+Tools for Testing APIs
+Postman - GUI tool for testing API endpoints.
+cURL - Command-line tool for HTTP requests.
