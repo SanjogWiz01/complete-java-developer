@@ -3,4 +3,4 @@ public class OK {
         System.out.println("Hello, World!");
     }
 } 
-// tis is te comment  j cj
+// This is a simple Java program that defines a class named `OK`. Inside the `main` method, it prints "Hello, World!" to the console. To run this program, you would need to compile it using a Java compiler and then execute the resulting bytecode.git
