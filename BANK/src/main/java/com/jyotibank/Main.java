@@ -2,6 +2,7 @@ package com.jyotibank;
 
 import com.jyotibank.config.AppConfig;
 import com.jyotibank.config.DatabaseConfig;
+import com.jyotibank.presentation.MainMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +49,10 @@ public class Main {
         // Phase 1 connection smoke-test
         verifyDatabaseConnection();
 
-        // TODO: Phase 11 will replace this with: new MainMenu().start();
-        logger.info("Phase 1 complete. Database connectivity confirmed.");
+        if (args.length > 0 && "--menu".equalsIgnoreCase(args[0])) {
+            new MainMenu().start();
+        }
+        logger.info("Startup checks complete.");
     }
 
     private static void verifyDatabaseConnection() {
