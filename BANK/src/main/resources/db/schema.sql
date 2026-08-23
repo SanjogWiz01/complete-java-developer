@@ -76,3 +76,16 @@ CREATE TABLE IF NOT EXISTS fixed_deposits (
   CONSTRAINT fk_fd_linked_account FOREIGN KEY (linked_account_id) REFERENCES accounts(account_id),
   CONSTRAINT fk_fd_account FOREIGN KEY (fd_account_id) REFERENCES accounts(account_id)
 );
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  log_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  action VARCHAR(50) NOT NULL,
+  entity_type VARCHAR(50),
+  entity_id BIGINT NULL,
+  details VARCHAR(500),
+  ip_address VARCHAR(45),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_user_created (user_id, created_at),
+  INDEX idx_audit_action (action)
+);

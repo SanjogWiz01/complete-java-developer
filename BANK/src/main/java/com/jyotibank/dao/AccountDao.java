@@ -12,6 +12,7 @@ public interface AccountDao {
     Optional<Account> findById(long accountId);
     Optional<Account> findByAccountNumber(String accountNumber);
     List<Account> findByCustomerId(long customerId);
+    List<Account> findAll();
     void updateBalance(long accountId, BigDecimal balance);
     void updateStatus(long accountId, AccountStatus accountStatus);
 }

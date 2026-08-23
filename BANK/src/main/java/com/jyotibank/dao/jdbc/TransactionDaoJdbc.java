@@ -6,10 +6,12 @@ import com.jyotibank.model.Transaction;
 import com.jyotibank.model.enums.TransactionStatus;
 import com.jyotibank.model.enums.TransactionType;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +66,52 @@ public class TransactionDaoJdbc implements TransactionDao {
             return history;
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to fetch transaction history: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Transaction> findByAccountIdAndDateRange(long accountId, LocalDate from, LocalDate to) {
+        String sql = """
+                SELECT * FROM transactions
+                 WHERE account_id = ? AND created_at >= ? AND created_at < ?
+                 ORDER BY created_at DESC
+                """;
+        List<Transaction> history = new ArrayList<>();
+        try (var conn = DatabaseConfig.getInstance().getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, accountId);
+            ps.setTimestamp(2, Timestamp.valueOf(from.atStartOfDay()));
+            ps.setTimestamp(3, Timestamp.valueOf(to.plusDays(1).atStartOfDay()));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) history.add(map(rs));
+            }
+            return history;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to fetch statement: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BigDecimal sumAmountByTypeOnDate(long accountId, TransactionType type, LocalDate date) {
+        String sql = """
+                SELECT COALESCE(SUM(amount), 0) AS total
+                  FROM transactions
+                 WHERE account_id = ?
+                   AND transaction_type = ?
+                   AND status = 'SUCCESS'
+                   AND created_at >= ? AND created_at < ?
+                """;
+        try (var conn = DatabaseConfig.getInstance().getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, accountId);
+            ps.setString(2, type.name());
+            ps.setTimestamp(3, Timestamp.valueOf(date.atStartOfDay()));
+            ps.setTimestamp(4, Timestamp.valueOf(date.plusDays(1).atStartOfDay()));
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getBigDecimal("total") : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to sum daily transactions: " + e.getMessage(), e);
         }
     }
 

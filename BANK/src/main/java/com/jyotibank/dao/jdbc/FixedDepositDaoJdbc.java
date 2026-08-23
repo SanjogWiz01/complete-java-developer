@@ -78,6 +78,22 @@ public class FixedDepositDaoJdbc implements FixedDepositDao {
     }
 
     @Override
+    public List<FixedDeposit> findByLinkedAccountId(long linkedAccountId) {
+        String sql = "SELECT * FROM fixed_deposits WHERE linked_account_id = ? ORDER BY created_at DESC";
+        List<FixedDeposit> deposits = new ArrayList<>();
+        try (var conn = DatabaseConfig.getInstance().getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, linkedAccountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) deposits.add(map(rs));
+            }
+            return deposits;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to fetch linked fixed deposits: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void update(FixedDeposit fixedDeposit) {
         String sql = """
                 UPDATE fixed_deposits

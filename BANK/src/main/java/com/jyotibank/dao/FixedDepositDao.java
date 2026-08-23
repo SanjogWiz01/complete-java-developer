@@ -9,5 +9,6 @@ public interface FixedDepositDao {
     long create(FixedDeposit fixedDeposit);
     Optional<FixedDeposit> findById(long fixedDepositId);
     List<FixedDeposit> findByFdAccountId(long fdAccountId);
+    List<FixedDeposit> findByLinkedAccountId(long linkedAccountId);
     void update(FixedDeposit fixedDeposit);
 }

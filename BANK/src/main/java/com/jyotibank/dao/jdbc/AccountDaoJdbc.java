@@ -94,6 +94,20 @@ public class AccountDaoJdbc implements AccountDao {
     }
 
     @Override
+    public List<Account> findAll() {
+        String sql = "SELECT * FROM accounts ORDER BY opened_at DESC";
+        List<Account> accounts = new ArrayList<>();
+        try (var conn = DatabaseConfig.getInstance().getConnection();
+             var ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) accounts.add(map(rs));
+            return accounts;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to fetch all accounts: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void updateBalance(long accountId, BigDecimal balance) {
         String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?";
         try (var conn = DatabaseConfig.getInstance().getConnection();
