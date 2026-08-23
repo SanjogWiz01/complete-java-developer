@@ -118,6 +118,22 @@ public final class AppConfig {
     }
 
     /**
+     * Parses a property as BigDecimal.
+     * Money values must never pass through double (binary floating point);
+     * this keeps paisa-exact arithmetic end to end.
+     */
+    public java.math.BigDecimal getDecimalProperty(String key, java.math.BigDecimal defaultValue) {
+        String value = properties.getProperty(key);
+        if (value == null) return defaultValue;
+        try {
+            return new java.math.BigDecimal(value.trim());
+        } catch (NumberFormatException e) {
+            logger.warn("Property '{}' has invalid decimal value '{}'. Using default: {}", key, value, defaultValue);
+            return defaultValue;
+        }
+    }
+
+    /**
      * Parses a property as long.
      * Used for timeouts and pool sizes that exceed int range on large servers.
      */

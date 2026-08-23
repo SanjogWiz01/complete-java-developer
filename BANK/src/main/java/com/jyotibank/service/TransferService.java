@@ -16,12 +16,15 @@ import java.util.UUID;
 public class TransferService {
 
     private final AccountService accountService;
+    private final AuditService auditService;
 
-    public TransferService(AccountService accountService) {
+    public TransferService(AccountService accountService, AuditService auditService) {
         this.accountService = accountService;
+        this.auditService = auditService;
     }
 
-    public String transfer(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description) {
+    public String transfer(long actorUserId, String fromAccountNumber, String toAccountNumber,
+                           BigDecimal amount, String description) {
         if (!InputValidator.isValidAmount(amount)) {
             throw new InvalidAmountException("Transfer amount must be greater than zero.");
         }
@@ -82,6 +85,8 @@ public class TransferService {
                         amount, toBefore, toAfter, description == null ? "Transfer received from " + fromAccountNumber : description);
 
                 conn.commit();
+                auditService.record(actorUserId, "TRANSFER", "ACCOUNT", from.getAccountId(),
+                        reference + ": " + amount + " from " + fromAccountNumber + " to " + toAccountNumber);
                 return reference;
             } catch (Exception e) {
                 conn.rollback();
