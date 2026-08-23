@@ -2,7 +2,30 @@ package com.jyotibank;
 
 import com.jyotibank.config.AppConfig;
 import com.jyotibank.config.DatabaseConfig;
+import com.jyotibank.dao.AccountDao;
+import com.jyotibank.dao.AuditLogDao;
+import com.jyotibank.dao.CustomerDao;
+import com.jyotibank.dao.FixedDepositDao;
+import com.jyotibank.dao.ReportDao;
+import com.jyotibank.dao.TransactionDao;
+import com.jyotibank.dao.UserDao;
+import com.jyotibank.dao.jdbc.AccountDaoJdbc;
+import com.jyotibank.dao.jdbc.AuditLogDaoJdbc;
+import com.jyotibank.dao.jdbc.CustomerDaoJdbc;
+import com.jyotibank.dao.jdbc.FixedDepositDaoJdbc;
+import com.jyotibank.dao.jdbc.ReportDaoJdbc;
+import com.jyotibank.dao.jdbc.TransactionDaoJdbc;
+import com.jyotibank.dao.jdbc.UserDaoJdbc;
 import com.jyotibank.presentation.MainMenu;
+import com.jyotibank.service.AccountService;
+import com.jyotibank.service.AuthService;
+import com.jyotibank.service.AuditService;
+import com.jyotibank.service.CustomerService;
+import com.jyotibank.service.FixedDepositService;
+import com.jyotibank.service.InterestService;
+import com.jyotibank.service.ReportService;
+import com.jyotibank.service.TransferService;
+import com.jyotibank.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,14 +36,13 @@ import java.sql.SQLException;
 /**
  * Main — application entry point.
  *
- * <p>Phase 1 only verifies that:
+ * <p>Startup order:
  * <ol>
- *   <li>AppConfig loads application.properties correctly</li>
- *   <li>DatabaseConfig builds the HikariCP pool without error</li>
- *   <li>A real JDBC connection to MySQL is obtained and returned</li>
+ *   <li>AppConfig loads application.properties</li>
+ *   <li>DatabaseConfig builds the HikariCP pool and verifies connectivity</li>
+ *   <li>The full object graph (DAOs → services → console UI) is wired</li>
+ *   <li>{@link MainMenu} takes over for interactive banking</li>
  * </ol>
- *
- * <p>This class will be expanded in later phases to launch the console UI.
  *
  * <p><b>Java concept — shutdown hooks:</b><br>
  * {@code Runtime.getRuntime().addShutdownHook()} registers a thread that the
@@ -46,13 +68,41 @@ public class Main {
             DatabaseConfig.getInstance().close();
         }, "shutdown-hook"));
 
-        // Phase 1 connection smoke-test
         verifyDatabaseConnection();
 
-        if (args.length > 0 && "--menu".equalsIgnoreCase(args[0])) {
-            new MainMenu().start();
-        }
-        logger.info("Startup checks complete.");
+        MainMenu menu = buildApplicationGraph();
+        menu.start();
+        logger.info("Application stopped cleanly.");
+    }
+
+    /**
+     * Manual dependency injection — the whole app graph in one readable place:
+     * DAOs (data access) → AuditService (cross-cutting) → domain services → UI.
+     */
+    private static MainMenu buildApplicationGraph() {
+        UserDao userDao = new UserDaoJdbc();
+        CustomerDao customerDao = new CustomerDaoJdbc();
+        AccountDao accountDao = new AccountDaoJdbc();
+        TransactionDao transactionDao = new TransactionDaoJdbc();
+        FixedDepositDao fixedDepositDao = new FixedDepositDaoJdbc();
+        ReportDao reportDao = new ReportDaoJdbc();
+        AuditLogDao auditLogDao = new AuditLogDaoJdbc();
+
+        AuditService auditService = new AuditService(auditLogDao);
+        AuthService authService = new AuthService(userDao, auditService);
+        CustomerService customerService = new CustomerService(customerDao);
+        AccountService accountService = new AccountService(accountDao, transactionDao, auditService);
+        TransferService transferService = new TransferService(accountService, auditService);
+        TransactionService transactionService = new TransactionService(transactionDao);
+        FixedDepositService fixedDepositService =
+                new FixedDepositService(accountDao, fixedDepositDao, transactionDao, auditService);
+        InterestService interestService =
+                new InterestService(accountDao, transactionDao, auditService);
+        ReportService reportService = new ReportService(accountDao, reportDao);
+
+        return new MainMenu(authService, customerService, accountService,
+                transferService, transactionService, fixedDepositService,
+                interestService, reportService);
     }
 
     private static void verifyDatabaseConnection() {
