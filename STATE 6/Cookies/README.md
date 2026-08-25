@@ -12,6 +12,16 @@ Cookie creation, cookie implementation, cookie servers and session tracking - al
 | `SessionManager.java` | Server-side sessions: thread-safe store, UUID session ids, idle timeout like Tomcat's 30 min | `java SessionManager` (demo) |
 | `SessionServer.java` | Login/cart/logout flow: browser keeps only an opaque `JSESSIONID`; real state stays on the server; expired-session janitor thread | `javac CookieImplementation.java SessionManager.java SessionServer.java` then `java SessionServer` -> http://localhost:8086 |
 | `CookieSessionServlet.java` | The same concepts with classic `javax.servlet.*` APIs for Tomcat 8/9 (`@WebServlet`, `request.getCookies()`, `HttpSession`) | deploy to a Servlet 3.0+ webapp |
+| `SignedCookieUtil.java` | HMAC-SHA256 signed cookie values - client edits break the signature; constant-time verification | `java SignedCookieUtil` (self-test) |
+| `CookieJar.java` | The browser's side of the deal: store Set-Cookie per domain/path, honour Max-Age/Expires, assemble `Cookie:` headers | `java CookieJar` (self-test) |
+| `SessionIdGenerator.java` | Why session ids need SecureRandom + 128-bit entropy; collision demo with weak ids | `java SessionIdGenerator` |
+| `SessionFixationDemo.java` | Session fixation attack vs. defense: regenerate the id at every privilege change | `java SessionFixationDemo` |
+| `CsrfTokenManager.java` | CSRF defenses: synchronizer token in the session + double-submit cookie pattern | `java CsrfTokenManager` |
+| `RememberMeService.java` | Safe "remember me": rotating series:token cookies, only hashes stored, replay detection | `java RememberMeService` |
+| `CookieConsentManager.java` | GDPR consent categories (necessary/preferences/analytics/marketing) with audit trail | `java CookieConsentManager` |
+| `CookieScopeValidator.java` | Audits Set-Cookie headers: Domain widening, missing Secure/HttpOnly, SameSite=None, `__Host-` rules | `java CookieScopeValidator` |
+| `SessionPersistence.java` | Survive restarts: serialize sessions to disk, reload them, drop expired ones | `java SessionPersistence` |
+| `CookieAttackLab.java` | Guided tour of hijacking/tampering/XSS-theft/CSRF/fixation and the attribute that stops each | `java CookieAttackLab` |
 
 ## Cookie vs Session in one table
 
